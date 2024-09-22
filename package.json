@@ -1,0 +1,12 @@
+{
+	"scripts": {
+		"start": "bun run --watch index.ts",
+		"upgrade": "npm-check-updates --upgrade --install=always --packageManager=bun",
+		"check": "biome check --write --unsafe .",
+		"lint": "tsc"
+	},
+	"devDependencies": {
+		"@types/bun": "^1.1.10",
+		"typescript": "^5.6.2"
+	}
+}
