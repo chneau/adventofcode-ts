@@ -129,3 +129,29 @@ export const aoc_2023_02 = () => {
 	}
 	return sum;
 };
+
+export const aoc_2023_02_part2 = () => {
+	const lines = input.split("\n");
+	let sum = 0;
+	for (const line of lines) {
+		const [game, sets] = line.split(": ");
+		if (!game || !sets) throw new Error("Invalid input");
+		const minimums = {
+			red: 0,
+			green: 0,
+			blue: 0,
+		};
+		for (const set of sets.split("; ")) {
+			const cubes = set.split(", ");
+			for (const cube of cubes) {
+				const [_count, color] = cube.split(" ");
+				if (!color || !_count) throw new Error("Invalid input");
+				const count = Number.parseInt(_count);
+				const c = color as keyof typeof minimums;
+				minimums[c] = Math.max(minimums[c], count);
+			}
+		}
+		sum += minimums.red * minimums.green * minimums.blue;
+	}
+	return sum;
+};
