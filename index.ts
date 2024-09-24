@@ -1,4 +1,6 @@
 console.log("Start");
+const pkg = await import("./aoc_2023_03");
+
 console.time("Time");
-console.log(await import("./aoc_2023_02").then((x) => x.aoc_2023_02_part2()));
+console.log(pkg.p1());
 console.timeEnd("Time");
