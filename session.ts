@@ -1,8 +1,7 @@
 const session =
-	Bun.env.AOC_SESSION ??
-	(await Bun.file(`${Bun.env.HOME}/.cache/aoc/session`).text());
+	Bun.env.AOC_SESSION ?? (await Bun.file(".cache/session").text());
 export const fetchInput = async (year: number, day: number) => {
-	const file = Bun.file(`${Bun.env.HOME}/.cache/aoc/${year}_${day}`);
+	const file = Bun.file(`.cache/${year}_${day}`);
 	const fileExist = await file.exists();
 	if (fileExist) {
 		return await file.text().then((x) => x.trim());
