@@ -43,9 +43,8 @@ export const p1 = (_input = input) => {
 					break;
 				}
 			}
-			// console.log(lineNumber, number, isNearSpecialChar);
 			if (isNearSpecialChar) sum += number;
-			i = j;
+			i = j + 1;
 		}
 	}
 	return sum;
