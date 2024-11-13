@@ -2,7 +2,7 @@ const p1Example = `Whisperbread Evertoes
 Warmstripe Chestnutplum
 Marshmallowwhisker Juniperheart`;
 
-const p1input = `Candyflake Icelight
+const input = `Candyflake Icelight
 Chestnutwhisker Marshmallowtoes
 Dashchime Evertoe
 Embercane Iceplum
@@ -48,7 +48,7 @@ Zestyflake Mistlejangle`;
 export const p1ex = () => p1(p1Example);
 
 // A 65 Z 90 a 97 z 122
-export const p1 = (_input = p1input) => {
+export const p1 = (_input = input) => {
 	const lines = _input.split("\n");
 	let max = 0;
 	for (const line of lines) {
@@ -67,3 +67,34 @@ export const p1 = (_input = p1input) => {
 	}
 	return max;
 };
+// 708241812429884286344759437796630713073664000000000000000
+
+const p2Example = "Whisperbread Evertoes";
+
+export const p2ex = () => p2(p2Example);
+
+export const p2 = (_input = input) => {
+	const lines = _input.split("\n");
+	let max = BigInt(0);
+	for (const line of lines) {
+		let sum = BigInt(1);
+		let index = 1;
+		for (let i = 0; i < line.length; i++) {
+			const charCode = line.charCodeAt(i);
+			if (charCode >= 97 && charCode <= 122) {
+				const value = charCode - 96;
+				sum *= BigInt(value * index * index);
+				index++;
+			} else if (charCode >= 65 && charCode <= 90) {
+				const value = charCode - 64;
+				sum *= BigInt(value * index * index * index);
+				index++;
+			}
+		}
+		if (sum > max) {
+			max = sum;
+		}
+	}
+	return max.toLocaleString("fullwide", { useGrouping: false });
+};
+// 6155462276326140104365349613620662555612507954531552262848518560653812695040000000000000000000000
