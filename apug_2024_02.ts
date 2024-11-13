@@ -64,3 +64,21 @@ export const p1 = (_input = input) => {
 	}
 	return which;
 };
+
+export const p2ex = () => p2(example);
+
+export const p2 = (_input = input) => {
+	const lines = _input.split("\n");
+	const chipshops = lines.map((line) => {
+		const [price, chips] = line.split(" ").map(Number) as [number, number];
+		return { skip: false, price, chips };
+	});
+	for (const [idx, curr] of chipshops.entries()) {
+		curr.skip = chipshops
+			.filter((_, i) => i !== idx)
+			.some((x) => curr.price >= x.price && curr.chips >= x.chips);
+	}
+	return chipshops
+		.filter((x) => !x.skip)
+		.reduce<number>((acc, curr) => acc + curr.price, 0);
+};
