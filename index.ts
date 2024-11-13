@@ -1,6 +1,6 @@
 console.log("\x1B[2J\x1B[3J\x1B[H");
 console.log("[++++++] Start");
-const pkg = await import("./apug_2024_02");
+const pkg = await import("./apug_2024_03");
 
 const possibleFuncs = ["p1ex", "p1", "p2ex", "p2"];
 
