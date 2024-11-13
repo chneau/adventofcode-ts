@@ -89,7 +89,52 @@ export const p1 = (_input = input, _taken = 8) => {
 
 export const p2ex = () => p2(example, 4);
 
+function* permutations(ones: number, zeros: number): Generator<number[]> {
+	const total = ones + zeros;
+	const max = 2 ** total;
+	for (let i = 0; i < max; i++) {
+		const perm = i.toString(2).padStart(total, "0");
+		if (perm.split("1").length - 1 !== ones) {
+			continue;
+		}
+		yield perm.split("").map(Number);
+	}
+}
+
 export const p2 = (_input = input, _taken = 8) => {
+	const states = _input.split("\n").map(Number);
+	const maxPermSize = _taken * 2 - 1;
+	const maxes = states.toSorted((a, b) => b - a).slice(0, maxPermSize);
+	const indexes = maxes.map((x) => states.indexOf(x));
+	let best = 0;
+
+	for (const perm of permutations(_taken, maxPermSize - _taken)) {
+		const indexesToTake = perm
+			.map<number>((x, idx) => (x === 1 ? (indexes[idx] ?? 0) : -1))
+			.filter((x) => x !== -1);
+		const sorted = indexesToTake.toSorted((a, b) => a - b);
+		let isGood = true;
+		for (let i = 1; i < sorted.length; i++) {
+			if ((sorted[i] ?? -1) - (sorted[i - 1] ?? -1) === 1) {
+				isGood = false;
+				break;
+			}
+		}
+		if (!isGood) {
+			continue;
+		}
+		const sum = sorted.reduce<number>(
+			(acc, curr) => acc + (states[curr] ?? -1),
+			0,
+		);
+		if (sum > best) {
+			best = sum;
+		}
+	}
+	return best;
+};
+
+export const p2old = (_input = input, _taken = 8) => {
 	const states = _input.split("\n").map(Number);
 
 	let permutation = 2 ** (states.length - 1);
