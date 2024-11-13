@@ -97,19 +97,19 @@ export const p2ex = () => {
 
 export const p2 = (_input = input) => {
 	const lines = _input.split("\n");
-	const dict: { [key: string]: string[] } = {};
+	const dict: { [key: string]: { who: string; age: bigint }[] } = {};
 	for (const line of lines) {
-		let sum = 1;
+		let sum = BigInt(1);
 		let index = 1;
 		for (let i = 0; i < line.length; i++) {
 			const charCode = line.charCodeAt(i);
 			if (charCode >= 97 && charCode <= 122) {
 				const value = charCode - 96;
-				sum *= value * index * index;
+				sum *= BigInt(value * index * index);
 				index++;
 			} else if (charCode >= 65 && charCode <= 90) {
 				const value = charCode - 64;
-				sum *= value * index * index * index;
+				sum *= BigInt(value * index * index * index);
 				index++;
 			}
 		}
@@ -118,15 +118,17 @@ export const p2 = (_input = input) => {
 			continue;
 		}
 		dict[char] = dict[char] || [];
-		dict[char].push(line);
+		dict[char].push({ who: line, age: sum });
 	}
 	let unique = "not found";
+	let age = BigInt(0);
 	for (const key in dict) {
 		if (dict[key]?.length === 1) {
-			unique = dict[key][0] ?? "not found";
+			unique = dict[key][0]?.who ?? "not found";
+			age = dict[key][0]?.age ?? BigInt(0);
 			break;
 		}
 	}
-	return unique;
+	return `${unique} ${age}`;
 };
 // Tinselbite Zestycheer
