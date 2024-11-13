@@ -69,12 +69,9 @@ export const p1 = (_input = input) => {
 };
 // 708241812429884286344759437796630713073664000000000000000
 
-const p2Example = "Whisperbread Evertoes";
-
-export const p2ex = () => p2(p2Example);
-
-export const p2 = (_input = input) => {
-	const lines = _input.split("\n");
+export const p2ex = () => {
+	const p2Example = "Whisperbread Evertoes";
+	const lines = p2Example.split("\n");
 	let max = BigInt(0);
 	for (const line of lines) {
 		let sum = BigInt(1);
@@ -97,4 +94,39 @@ export const p2 = (_input = input) => {
 	}
 	return max.toLocaleString("fullwide", { useGrouping: false });
 };
-// 6155462276326140104365349613620662555612507954531552262848518560653812695040000000000000000000000
+
+export const p2 = (_input = input) => {
+	const lines = _input.split("\n");
+	const dict: { [key: string]: string[] } = {};
+	for (const line of lines) {
+		let sum = 1;
+		let index = 1;
+		for (let i = 0; i < line.length; i++) {
+			const charCode = line.charCodeAt(i);
+			if (charCode >= 97 && charCode <= 122) {
+				const value = charCode - 96;
+				sum *= value * index * index;
+				index++;
+			} else if (charCode >= 65 && charCode <= 90) {
+				const value = charCode - 64;
+				sum *= value * index * index * index;
+				index++;
+			}
+		}
+		const char = sum.toString()[0];
+		if (!char) {
+			continue;
+		}
+		dict[char] = dict[char] || [];
+		dict[char].push(line);
+	}
+	let unique = "not found";
+	for (const key in dict) {
+		if (dict[key]?.length === 1) {
+			unique = dict[key][0] ?? "not found";
+			break;
+		}
+	}
+	return unique;
+};
+// Tinselbite Zestycheer
