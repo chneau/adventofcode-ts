@@ -55,8 +55,10 @@ const input = `79.51
 export const p1ex = () => p1(example, 4);
 
 export const p1 = (_input = input, _taken = 8) => {
-	const numbers = _input.split("\n").map(Number);
-	const states = numbers.map((x) => ({ x, disabled: false }));
+	const states = _input
+		.split("\n")
+		.map(Number)
+		.map((x) => ({ x, disabled: false }));
 
 	let taken = _taken;
 
@@ -85,6 +87,40 @@ export const p1 = (_input = input, _taken = 8) => {
 	return total;
 };
 
-export const p2ex = () => p2(example);
+export const p2ex = () => p2(example, 4);
 
-export const p2 = (_input = input) => {};
+export const p2 = (_input = input, _taken = 8) => {
+	const states = _input.split("\n").map(Number);
+
+	let permutation = 2 ** (states.length - 1);
+	let maxFound = 0;
+	while (true) {
+		const perm = permutation.toString(2);
+		if (perm.length < states.length) {
+			permutation++;
+			continue;
+		}
+		if (perm.length > states.length) {
+			break;
+		}
+		if (perm.split("").filter((x) => x === "1").length > _taken) {
+			permutation++;
+			continue;
+		}
+		if (perm.includes("11")) {
+			permutation++;
+			continue;
+		}
+		const sum = states.reduce<number>((acc, curr, idx) => {
+			if (perm[idx] === "1") {
+				return acc + curr;
+			}
+			return acc;
+		}, 0);
+		if (sum > maxFound) {
+			maxFound = sum;
+		}
+		permutation++;
+	}
+	return maxFound;
+};
