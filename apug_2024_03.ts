@@ -133,7 +133,11 @@ export const p2 = (_input = input, _taken = 8) => {
 			bestIndexes = indexesToTake;
 		}
 	}
-	return [best, bestIndexes, maxes, indexes] as const;
+	console.log("best", best);
+	console.log("bestIndexes", bestIndexes);
+	console.log("maxes", maxes);
+	console.log("indexes", indexes);
+	return best;
 };
 
 export const p2old = (_input = input, _taken = 8) => {
