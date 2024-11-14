@@ -103,10 +103,11 @@ function* permutations(ones: number, zeros: number): Generator<number[]> {
 
 export const p2 = (_input = input, _taken = 8) => {
 	const states = _input.split("\n").map(Number);
-	const maxPermSize = _taken * 2 - 1;
+	const maxPermSize = _taken * 1.62;
 	const maxes = states.toSorted((a, b) => b - a).slice(0, maxPermSize);
 	const indexes = maxes.map((x) => states.indexOf(x));
 	let best = 0;
+	let bestIndexes: number[] = [];
 
 	for (const perm of permutations(_taken, maxPermSize - _taken)) {
 		const indexesToTake = perm
@@ -129,9 +130,10 @@ export const p2 = (_input = input, _taken = 8) => {
 		);
 		if (sum > best) {
 			best = sum;
+			bestIndexes = indexesToTake;
 		}
 	}
-	return best;
+	return [best, bestIndexes, maxes, indexes] as const;
 };
 
 export const p2old = (_input = input, _taken = 8) => {
