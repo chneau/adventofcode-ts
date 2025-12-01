@@ -1,7 +1,9 @@
 import z from "zod";
 
-const session =
-	Bun.env.AOC_SESSION ?? (await Bun.file(".cache/session").text());
+const session = z
+	.string()
+	.nonempty()
+	.parse(Bun.env.AOC_SESSION ?? (await Bun.file(".cache/session").text()));
 export const fetchInput = async () => {
 	const name = z.string().parse(Bun.argv[2]);
 	const parts = name.split("_");
