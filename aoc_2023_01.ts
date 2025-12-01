@@ -14,7 +14,7 @@ export const p1 = (_input = input) => {
 			if (firstNumber === "") firstNumber = letter;
 			secondNumber = letter;
 		}
-		const number = Number.parseInt(`${firstNumber}${secondNumber}`);
+		const number = Number.parseInt(`${firstNumber}${secondNumber}`, 10);
 		sum += number;
 	}
 	console.log(sum);
@@ -54,7 +54,7 @@ export const p2 = (_input = input) => {
 			if (firstNumber === "") firstNumber = letter;
 			secondNumber = letter;
 		}
-		const number = Number.parseInt(`${firstNumber}${secondNumber}`);
+		const number = Number.parseInt(`${firstNumber}${secondNumber}`, 10);
 		sum += number;
 	}
 	// TODO

@@ -13,14 +13,14 @@ export const p1 = (_input = input) => {
 	for (const line of lines) {
 		const [game, sets] = line.split(": ");
 		if (!game || !sets) throw new Error("Invalid input");
-		const gameId = Number.parseInt(game.slice(5));
+		const gameId = Number.parseInt(game.slice(5), 10);
 		let isOk = true;
 		for (const set of sets.split("; ")) {
 			const cubes = set.split(", ");
 			for (const cube of cubes) {
 				const [_count, color] = cube.split(" ");
 				if (!color || !_count) throw new Error("Invalid input");
-				const count = Number.parseInt(_count);
+				const count = Number.parseInt(_count, 10);
 				const limit = limits[color];
 				if (limit !== undefined && count > limit) {
 					isOk = false;
@@ -49,7 +49,7 @@ export const p2 = (_input = input) => {
 			for (const cube of cubes) {
 				const [_count, color] = cube.split(" ");
 				if (!color || !_count) throw new Error("Invalid input");
-				const count = Number.parseInt(_count);
+				const count = Number.parseInt(_count, 10);
 				const c = color as keyof typeof minimums;
 				minimums[c] = Math.max(minimums[c], count);
 			}
