@@ -7,21 +7,16 @@ console.log(`[++++++] Start ${file} [++++++]`);
 const pkg = await import(`./${file}`);
 
 for (const key of Object.keys(pkg)) {
-	const fn = pkg[key];
-	if (typeof fn !== "function") continue;
 	console.time(`Time ${key}`);
-	const result = await fn();
+	const result = await pkg[key]();
 	console.timeEnd(`Time ${key}`);
 	console.log(result);
 }
 console.log("[------] End [------]");
 
 console.log("\n[++++++] Benchmark [++++++]");
-for (const key of Object.keys(pkg)) {
-	if (key.endsWith("ex")) continue;
-	const fn = pkg[key];
-	if (typeof fn !== "function") continue;
-	bench(key, () => fn());
+for (const key of Object.keys(pkg).filter((x) => !x.endsWith("ex"))) {
+	bench(key, pkg[key]);
 }
 await run();
 console.log("[------] End [------]");
