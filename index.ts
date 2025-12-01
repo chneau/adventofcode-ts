@@ -1,3 +1,4 @@
+import { bench, run } from "mitata";
 import z from "zod";
 
 console.log("\x1B[2J\x1B[3J\x1B[H");
@@ -17,4 +18,10 @@ for (const func of possibleFuncs) {
 	console.timeEnd(`Time ${func}`);
 	console.log(result);
 }
+console.log("[------] End [------]");
+
+console.log("\n[++++++] Benchmark [++++++]");
+pkg.p1 && bench("p1", () => pkg.p1());
+pkg.p2 && bench("p2", () => pkg.p2());
+await run();
 console.log("[------] End [------]");
