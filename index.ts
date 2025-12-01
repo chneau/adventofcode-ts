@@ -6,22 +6,22 @@ const file = z.string().parse(Bun.argv[2]);
 console.log(`[++++++] Start ${file} [++++++]`);
 const pkg = await import(`./${file}`);
 
-const possibleFuncs = ["p1ex", "p1", "p2ex", "p2"];
-
-for (const func of possibleFuncs) {
-	const fn = pkg[func];
-	if (typeof fn !== "function") {
-		continue;
-	}
-	console.time(`Time ${func}`);
+for (const key of Object.keys(pkg)) {
+	const fn = pkg[key];
+	if (typeof fn !== "function") continue;
+	console.time(`Time ${key}`);
 	const result = await fn();
-	console.timeEnd(`Time ${func}`);
+	console.timeEnd(`Time ${key}`);
 	console.log(result);
 }
 console.log("[------] End [------]");
 
 console.log("\n[++++++] Benchmark [++++++]");
-pkg.p1 && bench("p1", () => pkg.p1());
-pkg.p2 && bench("p2", () => pkg.p2());
+for (const key of Object.keys(pkg)) {
+	if (key.endsWith("ex")) continue;
+	const fn = pkg[key];
+	if (typeof fn !== "function") continue;
+	bench(key, () => fn());
+}
 await run();
 console.log("[------] End [------]");

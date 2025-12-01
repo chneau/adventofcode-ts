@@ -29,8 +29,8 @@ export const p1 = (nn = input) => {
 	let result = 0;
 	for (const n of nn) {
 		dial += n;
-		dial %= 100;
-		result += Number(dial === 0);
+		dial = dial % 100;
+		if (dial === 0) ++result;
 	}
 	return result;
 };
@@ -44,7 +44,7 @@ export const p2 = (nn = input) => {
 		dial += n;
 		const isOverflow = dial < 0 || dial >= 100;
 		dial = Math.abs(dial % 100);
-		result += Number(isOverflow);
+		if (isOverflow) ++result;
 	}
 	return result;
 };
