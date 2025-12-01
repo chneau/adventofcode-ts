@@ -27,7 +27,7 @@ export const p1 = (_input = input) => {
 		const value = valueSchema.parse(line.slice(1));
 		dial = action === "L" ? dial - value : dial + value;
 		dial %= 100;
-		dial === 0 && result++;
+		dial === 0 && ++result;
 	}
 	return result;
 };
@@ -46,7 +46,7 @@ export const p2 = (_input = input) => {
 		dial = action === "L" ? dial - value : dial + value;
 		const isOverflow = dial < 0 || dial >= 100;
 		dial = Math.abs(dial % 100);
-		isOverflow && result++;
+		isOverflow && ++result;
 	}
 	return result;
 };
