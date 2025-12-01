@@ -4,11 +4,11 @@
   "workspaces": {
     "": {
       "dependencies": {
-        "zod": "^4.1.13",
+        "zod": "latest",
       },
       "devDependencies": {
-        "@types/bun": "^1.3.3",
-        "typescript": "^5.9.3",
+        "@types/bun": "latest",
+        "typescript": "latest",
       },
     },
   },

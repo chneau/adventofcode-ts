@@ -12,28 +12,20 @@ L55
 L1
 L99
 R14
-L82`
+L82`;
 
 export const p1ex = () => p1(example);
 
 export const p1 = (_input = input) => {
-  const lines = _input.split("\n");
-  let dial = 50;
-  let result = 0;
-  for (const line of lines) {
-    const action = z.enum(["L", "R"]).parse(line[0]);
-    const value = z.coerce.number().parse(line.slice(1));
-    if (action === "L") {
-      dial -= value;
-      if (dial < 0) dial += 100;
-      dial %= 100;
-    } else {
-      dial += value;
-      dial %= 100;
-    }
-    if (dial === 0) {
-      result++;
-    }
-  }
-  return result;
-}
+	const lines = _input.split("\n");
+	let dial = 50;
+	let result = 0;
+	for (const line of lines) {
+		const action = z.enum(["L", "R"]).parse(line[0]);
+		const value = z.coerce.number().parse(line.slice(1));
+		dial = action === "L" ? dial - value : dial + value;
+		dial %= 100;
+		dial === 0 && result++;
+	}
+	return result;
+};
