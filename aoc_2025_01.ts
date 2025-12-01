@@ -20,9 +20,11 @@ export const p1 = (_input = input) => {
 	const lines = _input.split("\n");
 	let dial = 50;
 	let result = 0;
+	const actionSchema = z.enum(["L", "R"]);
+	const valueSchema = z.coerce.number();
 	for (const line of lines) {
-		const action = z.enum(["L", "R"]).parse(line[0]);
-		const value = z.coerce.number().parse(line.slice(1));
+		const action = actionSchema.parse(line[0]);
+		const value = valueSchema.parse(line.slice(1));
 		dial = action === "L" ? dial - value : dial + value;
 		dial %= 100;
 		dial === 0 && result++;
