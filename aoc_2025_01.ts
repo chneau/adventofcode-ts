@@ -36,15 +36,17 @@ export const p1 = (nn = input) => {
 };
 
 export const p2ex = () => p2(example);
-
 export const p2 = (nn = input) => {
 	let dial = 50;
 	let result = 0;
 	for (const n of nn) {
-		dial += n;
-		const isOverflow = dial < 0 || dial >= 100;
-		dial = Math.abs(dial % 100);
-		if (isOverflow) ++result;
+		const next = dial + n;
+		if (n > 0) {
+			result += Math.floor(next / 100) - Math.floor(dial / 100);
+		} else {
+			result += Math.floor((dial - 1) / 100) - Math.floor((next - 1) / 100);
+		}
+		dial = next;
 	}
 	return result;
 };
