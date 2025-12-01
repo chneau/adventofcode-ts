@@ -8,8 +8,7 @@ const pkg = await import(`./${file}`);
 const possibleFuncs = ["p1ex", "p1", "p2ex", "p2"];
 
 for (const func of possibleFuncs) {
-	// biome-ignore lint/suspicious/noExplicitAny: oh let me be, let me beeeeee
-	const fn = (pkg as any)[func];
+	const fn = pkg[func];
 	if (typeof fn !== "function") {
 		continue;
 	}

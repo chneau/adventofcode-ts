@@ -1,6 +1,6 @@
 import { fetchInput } from "./session";
 
-const input = await fetchInput(2023, 3);
+const input = await fetchInput();
 
 const example = `467..114..
 ...*......

@@ -1,6 +1,6 @@
 import { fetchInput } from "./session";
 
-const input = await fetchInput(2023, 2);
+const input = await fetchInput();
 
 export const p1 = (_input = input) => {
 	const lines = _input.split("\n");

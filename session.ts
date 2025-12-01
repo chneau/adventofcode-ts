@@ -1,6 +1,12 @@
+import z from "zod";
+
 const session =
 	Bun.env.AOC_SESSION ?? (await Bun.file(".cache/session").text());
-export const fetchInput = async (year: number, day: number) => {
+export const fetchInput = async () => {
+	const name = z.string().parse(Bun.argv[2]);
+	const parts = name.split("_");
+	const year = z.coerce.number().parse(parts[1]);
+	const day = z.coerce.number().parse(parts[2]);
 	const file = Bun.file(`.cache/${year}_${day}`);
 	const fileExist = await file.exists();
 	if (fileExist) {
