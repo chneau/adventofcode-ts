@@ -1,5 +1,6 @@
 import z from "zod";
 
+await Bun.$`mkdir -p .cache; touch .cache/session`;
 const session = z
 	.string()
 	.nonempty()
@@ -9,6 +10,7 @@ export const fetchInput = async () => {
 	const parts = name.split("_");
 	const year = z.coerce.number().parse(parts[1]);
 	const day = z.coerce.number().parse(parts[2]);
+	console.log(`https://adventofcode.com/${year}/day/${day}`);
 	const file = Bun.file(`.cache/${year}_${day}`);
 	const fileExist = await file.exists();
 	if (fileExist) {
