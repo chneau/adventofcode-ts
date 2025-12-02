@@ -1,64 +1,66 @@
-#include <math.h>
-
 typedef long long ll;
 
-ll ipow(ll base, int exp) {
-  ll res = 1;
-  while (exp > 0) {
-    if (exp % 2 == 1) res *= base;
-    base *= base;
-    exp /= 2;
+static const ll POW10[20] = {
+  1LL, 10LL, 100LL, 1000LL, 10000LL, 
+  100000LL, 1000000LL, 10000000LL, 100000000LL, 
+  1000000000LL, 10000000000LL, 100000000000LL, 1000000000000LL, 
+  10000000000000LL, 100000000000000LL, 1000000000000000LL, 
+  10000000000000000LL, 100000000000000000LL, 1000000000000000000LL,
+};
+
+static inline int get_len_fast(ll n) {
+  if (n < 100000LL) {
+    if (n < 100LL) return (n < 10LL) ? 1 : 2;
+    if (n < 10000LL) return (n < 1000LL) ? 3 : 4;
+    return 5;
   }
-  return res;
+  if (n < 10000000000LL) {
+    if (n < 100000000LL) return (n < 1000000LL) ? 6 : (n < 10000000LL) ? 7 : 8;
+    return (n < 1000000000LL) ? 9 : 10;
+  }
+  for (int i = 11; i < 19; i++) {
+    if (n < POW10[i]) return i;
+  }
+  return 19;
 }
 
-int get_len(ll n) {
-  if (n == 0) return 1;
-  return (int)floor(log10((double)n)) + 1;
-}
-
-ll p1(ll pairs[][2], int count) {
+ll p1(ll* input, int count) {
   ll result = 0;
   for (int i = 0; i < count; i++) {
-    for (ll x = pairs[i][0]; x <= pairs[i][1]; x++) {
-      int len = get_len(x);
-      if (len % 2 != 0) continue;
+    ll start = input[i * 2];
+    ll end = input[i * 2 + 1];
 
-      int half_len = len / 2;
-      ll splitter = ipow(10, half_len);
-      
-      ll lower = x % splitter; 
+    for (ll x = start; x <= end; x++) {
+      int len = get_len_fast(x);
+      if (len & 1) continue;
+      int half_len = len >> 1;
+      ll splitter = POW10[half_len];
+      ll lower = x % splitter;
       ll upper = x / splitter;
-
       if (lower == upper) result += x;
     }
   }
   return result;
 }
 
-ll p2(ll pairs[][2], int count) {
+ll p2(ll* input, int count) {
   ll result = 0;
   for (int i = 0; i < count; i++) {
-    for (ll x = pairs[i][0]; x <= pairs[i][1]; x++) {
-      int len = get_len(x);
-      
+    ll start = input[i * 2];
+    ll end = input[i * 2 + 1];
+    for (ll x = start; x <= end; x++) {
+      int len = get_len_fast(x);
       for (int split = 1; split < len; split++) {
         if (len % split != 0) continue;
-
-        ll divisor = ipow(10, split);
-        ll pattern = x % divisor;
-        ll temp = x;
-        int valid = 1;
-
-        while (temp > 0) {
-          if ((temp % divisor) != pattern) {
-            valid = 0;
-            break;
-          }
-          temp /= divisor;
+        ll multiplier = POW10[split];
+        ll pattern = x % multiplier;
+        if ((x / POW10[len - split]) != pattern) continue;
+        ll reconstructed = pattern;
+        int steps = (len / split) - 1;
+        for (int k = 0; k < steps; k++) {
+          reconstructed = reconstructed * multiplier + pattern;
         }
-
-        if (valid) {
+        if (reconstructed == x) {
           result += x;
           break;
         }
