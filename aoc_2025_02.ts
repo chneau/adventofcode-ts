@@ -33,18 +33,22 @@ export const p2 = async (input = _input) => {
 	for (const [start, end] of input) {
 		for (let x = start; x <= end; x++) {
 			const length = Math.floor(Math.log10(x)) + 1;
-			for (let split = 1; split < length; split++) {
+			const maxSplitSize = Math.ceil(length / 2) + 1;
+			for (let split = 1; split < maxSplitSize; split++) {
 				if (length % split !== 0) continue;
-				const parts: number[] = [];
+				const firstPart = x % 10 ** split;
+				let ok = true;
 				for (let pos = 0; pos < length; pos += split) {
 					const part = Math.floor((x % 10 ** (pos + split)) / 10 ** pos);
-					parts.push(part);
+					if (part !== firstPart) {
+						ok = false;
+						break;
+					}
 				}
-				const firstPart = parts[0];
-				if (firstPart == null) throw new Error("unreachable");
-				if (!parts.every((p) => p === firstPart)) continue;
-				result += x;
-				break;
+				if (ok) {
+					result += x;
+					break;
+				}
 			}
 		}
 	}
