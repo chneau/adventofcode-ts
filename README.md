@@ -93,3 +93,15 @@ The `package.json` includes several helper scripts:
 ## License
 
 This project is open source.
+
+## Benchmarks
+
+Benchmarks are run on a AMD Ryzen 9 270 w/ Radeon 780M Graphics.
+Runtime: bun 1.3.3 (x64-linux)
+
+| File        | p1 (ms) | p2 (ms) |
+|-------------|---------|---------|
+| aoc_2025_01 | 0.025   | 0.020   |
+| aoc_2025_02 | 0.002   | 0.042   |
+| aoc_2025_03 | 1.29    | 0.414   |
+| aoc_2025_04 | 0.469   | 25.73   |
