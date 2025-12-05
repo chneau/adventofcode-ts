@@ -51,7 +51,8 @@ in README.md.
 6. Do not test, do not commit, just stop now as I manually have to check the
    solution and submit it Best you can do here is run `bun run lint` to check
    for type errors and fix them and `bun run check` to format the code (ignore
-   its output), generally just with type assertions
+   its output), generally just with type assertions. Output the result of p1 so
+   I can see it.
 
 ### for p2:
 
