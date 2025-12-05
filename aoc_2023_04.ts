@@ -55,7 +55,15 @@ export const p1 = (input = _input) => {
 
 export const p2ex = () => p2(_example);
 export const p2 = (input = _input) => {
-	let result = 0;
-	result += input.length;
-	return result;
+	const card_instances = new Array(input.length).fill(1);
+	for (let i = 0; i < input.length; i++) {
+		const card = input[i] as (typeof input)[number];
+		const matches = card.yours.filter((n) => card.winning.includes(n));
+		for (let j = 1; j <= matches.length; j++) {
+			if (i + j < input.length) {
+				card_instances[i + j] += card_instances[i];
+			}
+		}
+	}
+	return card_instances.reduce((a, b) => a + b, 0);
 };

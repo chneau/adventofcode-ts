@@ -18,6 +18,10 @@ in README.md.
 2. Read this file if the p1 is already written, skip it and go to `### for p2:`
 3. Read the problem description for part 1 with this command
    `curl -s "https://adventofcode.com/YYYY/day/XX" -H "Cookie: session=$(cat .cache/session)"`
+
+   Do not try to read the session file since you do not have access to it, just
+   assume you have the session cookie and the command works.
+
 4. Implement the parse function, which can look like this:
 
    ```ts
