@@ -16,13 +16,19 @@ export const p1ex = () => p1(_example);
 export const p1 = (input = _input) => {
 	let result = 0;
 	for (const [start, end] of input) {
-		for (let x = start; x <= end; x++) {
-			const length = Math.floor(Math.log10(x)) + 1;
-			if (length % 2 !== 0) continue;
-			const leftPart = x % 10 ** Math.floor(length / 2);
-			const rightPart = Math.floor(x / 10 ** Math.ceil(length / 2));
-			if (leftPart !== rightPart) continue;
-			result += x;
+		if (end < 10) continue;
+		const maxLen = Math.floor(Math.log10(end)) + 1;
+		const maxHalf = Math.floor(maxLen / 2);
+		for (let half = 1; half <= maxHalf; half++) {
+			const pow = 10 ** half;
+			const scale = pow + 1;
+			const minFirst = 10 ** (half - 1);
+			const maxFirst = pow - 1;
+			const low = Math.max(minFirst, Math.ceil(start / scale));
+			const high = Math.min(maxFirst, Math.floor(end / scale));
+			for (let first = low; first <= high; first++) {
+				result += first * scale;
+			}
 		}
 	}
 	return result;
@@ -31,22 +37,27 @@ export const p2ex = () => p2(_example);
 export const p2 = async (input = _input) => {
 	let result = 0;
 	for (const [start, end] of input) {
-		for (let x = start; x <= end; x++) {
-			const length = Math.floor(Math.log10(x)) + 1;
-			for (let split = 1; split < length; split++) {
-				if (length % split !== 0) continue;
-				const parts: number[] = [];
-				for (let pos = 0; pos < length; pos += split) {
-					const part = Math.floor((x % 10 ** (pos + split)) / 10 ** pos);
-					parts.push(part);
+		const seen = new Set<number>();
+		if (end < 10) continue;
+		const maxLen = Math.floor(Math.log10(end)) + 1;
+		for (let L = 1; L <= Math.floor(maxLen / 2); L++) {
+			const powL = 10 ** L;
+			const kMax = Math.floor(maxLen / L);
+			for (let k = 2; k <= kMax; k++) {
+				const totalLen = L * k;
+				const powTotal = 10 ** totalLen;
+				const scale = (powTotal - 1) / (powL - 1);
+				const minFirst = 10 ** (L - 1);
+				const maxFirst = powL - 1;
+				const low = Math.max(minFirst, Math.ceil(start / scale));
+				const high = Math.min(maxFirst, Math.floor(end / scale));
+				for (let first = low; first <= high; first++) {
+					const num = first * scale;
+					if (num >= start && num <= end) seen.add(num);
 				}
-				const firstPart = parts[0];
-				if (firstPart == null) throw new Error("unreachable");
-				if (!parts.every((p) => p === firstPart)) continue;
-				result += x;
-				break;
 			}
 		}
+		for (const v of seen) result += v;
 	}
 	return result;
 };
