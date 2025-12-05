@@ -46,18 +46,19 @@ export const p1 = (input = _input) => {
 	}
 	return result;
 };
-const _example2 = _example.filter((x) => typeof x === "object");
-const input2 = _input.filter((x) => typeof x === "object");
+const _example2 = _example
+	.filter((x) => typeof x === "object")
+	.sort((x, y) => x[0] - y[0]);
+const input2 = _input
+	.filter((x) => typeof x === "object")
+	.sort((x, y) => x[0] - y[0]);
 export const p2ex = () => p2(_example2);
 export const p2 = (input = input2) => {
 	let result = 0;
-	const normalized = input
-		.map(([a, b]) => [Math.min(a, b), Math.max(a, b)] as [number, number])
-		.sort((x, y) => x[0] - y[0]);
 
 	let curStart: number | null = null;
 	let curEnd = 0;
-	for (const [s, e] of normalized) {
+	for (const [s, e] of input) {
 		if (curStart === null) {
 			curStart = s;
 			curEnd = e;
