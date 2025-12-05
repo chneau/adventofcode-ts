@@ -118,7 +118,7 @@ Benchmarks are run on a AMD Ryzen 9 270 w/ Radeon 780M Graphics. Runtime: bun
 1.3.3 (x64-linux)
 
 <!--
-AI hint: to add a benchmark to the table:
+# AI instructions to add a benchmark to the table:
 Day title: curl the page and get the title from the first h2 element.
 To benchmark it, run `bun run index.ts aoc_YYYY_DD` and copy the times from the output.
  -->
