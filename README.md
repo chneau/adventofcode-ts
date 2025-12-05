@@ -117,50 +117,17 @@ This project is open source.
 Benchmarks are run on a AMD Ryzen 9 270 w/ Radeon 780M Graphics. Runtime: bun
 1.3.3 (x64-linux)
 
-<!--
-# AI instructions to add a benchmark to the table:
-Day title: curl the page and get the title from the first h2 element.
-To benchmark it, run `bun run index.ts aoc_YYYY_DD` and copy the times from the output.
- -->
-
-|        | Day                                                               |  Part 1 |  Part 2 |
-| :----- | :---------------------------------------------------------------- | ------: | ------: |
+|      | Day                                                               |  Part 1 |  Part 2 |
+| :--- | :---------------------------------------------------------------- | ------: | ------: |
 | ⭐️⭐️ | [Day 1: Secret Entrance](https://adventofcode.com/2025/day/1)     | 0.025ms | 0.020ms |
 | ⭐️⭐️ | [Day 2: Gift Shop](https://adventofcode.com/2025/day/2)           | 0.002ms | 0.042ms |
 | ⭐️⭐️ | [Day 3: Lobby](https://adventofcode.com/2025/day/3)               |  1.29ms | 0.414ms |
 | ⭐️⭐️ | [Day 4: Printing Department](https://adventofcode.com/2025/day/4) | 0.469ms | 25.73ms |
 | ⭐️⭐️ | [Day 5: Cafeteria](https://adventofcode.com/2025/day/5)           | 0.566ms | 0.019ms |
-|        | Day 6                                                             |         |         |
-|        | Day 7                                                             |         |         |
-|        | Day 8                                                             |         |         |
-|        | Day 9                                                             |         |         |
-|        | Day 10                                                            |         |         |
-|        | Day 11                                                            |         |         |
-|        | Day 12                                                            |         |         |
-
-<!--
-# AI instructions to run a new day fromn scratch:
-1. Run `bun run index aoc_YYYY_XX` (replace XX with the day number, zero-padded).
-this will create the file
-Only do this if the file does not already exist
-
-## for p1:
-2. Read this file
-if the p1 is already written, skip it and go to p2
-3. Read the problem description for part 1 from https://adventofcode.com/YYYY/day/XX with a curl command
-4. Read the aoc_2025_04.ts file to see how the parse function is written
-Modify it as it fits, the idea is for p1 or p2 to not have to do data manipulation anymore
-5. solve it and write the code in the p1 function
-6. Do not test, do not commit, just stop now as I manually have to check the solution and submit it
-Best you can do here is run bun run lint to check for type errors and fix them, generally just with type assertions
-
-## for p2:
-7. Read the problem description for part 2 from https://adventofcode.com/YYYY/day/XX with a curl command
-This time, you will have to set a "Cookie" header with the session cookie to be able to access the part 2 description. Read the file in .cache/session to get the session cookie value.
-8. solve it and write the code in the p2 function
-9. Do not test, do not commit, just stop now as I manually have to check the solution and submit it
-Best you can do here is run bun run lint to check for type errors and fix them, generally just with type assertions
-
-## helpers
-if the problem requires different input parsing, read aoc_2025_05.ts and see how a parseP2 function is written and used in p2
--->
+|      | Day 6                                                             |         |         |
+|      | Day 7                                                             |         |         |
+|      | Day 8                                                             |         |         |
+|      | Day 9                                                             |         |         |
+|      | Day 10                                                            |         |         |
+|      | Day 11                                                            |         |         |
+|      | Day 12                                                            |         |         |
