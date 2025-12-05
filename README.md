@@ -99,9 +99,17 @@ This project is open source.
 Benchmarks are run on a AMD Ryzen 9 270 w/ Radeon 780M Graphics.
 Runtime: bun 1.3.3 (x64-linux)
 
-| File        | p1 (ms) | p2 (ms) |
-| ----------- | ------- | ------- |
-| aoc_2025_01 | 0.025   | 0.020   |
-| aoc_2025_02 | 0.002   | 0.042   |
-| aoc_2025_03 | 1.29    | 0.414   |
-| aoc_2025_04 | 0.469   | 25.73   |
+| | Day                                                               |    Part 1 |     Part 2 |
+|:------|:------------------------------------------------------------------|----------:|-----------:|
+| ⭐️⭐️ | [Day 1: Secret Entrance](https://adventofcode.com/2025/day/1)     | 0.025ms |  0.020ms |
+| ⭐️⭐️ | [Day 2: Gift Shop](https://adventofcode.com/2025/day/2)           | 0.002ms | 0.042ms |
+| ⭐️⭐️ | [Day 3: Lobby](https://adventofcode.com/2025/day/3)               | 1.29ms |  0.414ms |
+| ⭐️⭐️ | [Day 4: Printing Department](https://adventofcode.com/2025/day/4) | 0.469ms |  25.73ms |
+| | Day 5                                                             |           |            |
+| | Day 6                                                             |           |            |
+| | Day 7                                                             |           |            |
+| | Day 8                                                             |           |            |
+| | Day 9                                                             |           |            |
+| | Day 10                                                            |           |            |
+| | Day 11                                                            |           |            |
+| | Day 12                                                            |           |            |
