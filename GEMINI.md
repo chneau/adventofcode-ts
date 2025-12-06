@@ -3,21 +3,21 @@
 YYYY = year (2015-current year)
 DD = day (01-25)
 
-## To get the problem description for a day:
+## To read the problem description for a day:
 
 Run `bun index.ts aoc_YYYY_DD --read`.
 
-## To create and read the content of a file for a day:
+## To create the solution file for a day:
 
 Run `bun index.ts aoc_YYYY_DD --create`.
 
-## To run and benchmark a day:
+## To benchmark a day:
 
 Run `bun index.ts aoc_YYYY_DD`.
 
 ## To add a benchmark to the table:
 
-Get the problem, benchmark it and then add it to the table in the @README.md
+Get the problem description, benchmark it and then add it to the table in the @README.md
 file.
 
 ## Code style
@@ -57,13 +57,14 @@ const _example = await parse(`example_input_from_the_page_here`);
 The `p1` and `p2` must not do any parsing or data manipulation, just solve the
 problem using the parsed input.
 
-## Available commands
+## Perimeter of action
 
-Do not test, do not commit, just stop now as I manually have to check the
-solution and submit it Best you can do here is run `bun run lint` to check for
-type errors and fix them and `bun run check` to format the code (ignore its
-output), generally just with type assertions. Output the result of p1 so I can
-see it.
+- Read a problem description
+- Read the solution file
+- Lint the code using `bun run lint`
+- Fix the code formatting using `bun run check`
+- Write the parsing logic using zod and `parseAsync`
+- Write the solution logic in `p1` and `p2`
 
 ## Part 2 parser
 
