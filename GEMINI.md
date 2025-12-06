@@ -19,8 +19,9 @@ file.
 
 ## Code style
 
-Typescript noUncheckedIndexedAccess is true, do not use "!" operator to assert
-undefined values, you can instead use a type assertion;
+Typescript is set to strict mode including `noUncheckedIndexedAccess`. Do not
+use "!" operator to assert undefined values, you can instead use a type
+assertion but zod is preferred to validate and parse data.
 
 ## Parsing input
 
