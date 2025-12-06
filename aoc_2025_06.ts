@@ -47,9 +47,62 @@ export const p1 = (input = _input) => {
 
 	return grandTotal;
 };
-export const p2ex = () => p2(_example);
-export const p2 = (input = _input) => {
+const parse2 = async (input: string) => {
+	const lines = input.split("\n");
+	const length = lines[0]?.length ?? 0;
+	const groups = [] as {
+		operation: "+" | "*" | "";
+		nums: number[];
+	}[];
+	let group = {
+		operation: "" as "+" | "*" | "",
+		nums: [] as number[],
+	};
+	for (let i = 0; i < length; i++) {
+		const characters = lines.map((x) => x[i] as string);
+		const isSpaceOnly = characters.every((x) => x === " ");
+		if (isSpaceOnly) {
+			groups.push(structuredClone(group));
+			group = { operation: "", nums: [] };
+			continue;
+		}
+		const num = Number.parseInt(characters.slice(0, -1).join(""), 10);
+		const operation = characters[lines.length - 1];
+		if (operation === "+" || operation === "*") {
+			group.operation = operation as "+" | "*";
+		}
+		group.nums.push(num);
+	}
+	groups.push(group);
+	return z
+		.object({
+			operation: z.literal(["+", "*"]),
+			nums: z.array(z.number()),
+		})
+		.array()
+		.parseAsync(groups);
+};
+const _example2 = await parse2(_rawExample);
+const _input2 = await parse2(_rawInput);
+export const p2ex = () => p2(_example2);
+export const p2 = (input = _input2) => {
 	let result = 0;
-	result += input.length;
+	for (const group of input) {
+		let groupResult: number | undefined;
+		for (const num of group.nums) {
+			if (groupResult === undefined) {
+				groupResult = num;
+			} else {
+				if (group.operation === "+") {
+					groupResult += num;
+				} else if (group.operation === "*") {
+					groupResult *= num;
+				}
+			}
+		}
+		if (groupResult !== undefined) {
+			result += groupResult;
+		}
+	}
 	return result;
 };
