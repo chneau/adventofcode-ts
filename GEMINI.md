@@ -48,11 +48,12 @@ in README.md.
    				.filter((x) => x != null),
    		);
    const _input = await fetchInput().then(parse);
-   const _example = await parse(`example_input_here`);
+   const _example = await parse(`example_input_from_the_page_here`);
    ```
 
    Just adapt the parsing logic to your input format, the part functions should
-   not do anymore data manipulation than necessary
+   not do anymore data manipulation than necessary, you must use zod to
+   validate. The example must be extracted from the page.
 
 5. Solve it and write the code in the p1 function
 6. Do not test, do not commit, just stop now as I manually have to check the
