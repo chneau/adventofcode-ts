@@ -15,11 +15,13 @@ const parse = (input: string) => {
 			length: pre[0]?.length,
 		});
 };
-const _example = await parse(`123 328  51 64 
+const _rawInput = await fetchInput();
+const _rawExample = `123 328  51 64 
  45 64  387 23 
   6 98  215 314
-*   +   *   +  `);
-const _input = await fetchInput().then(parse);
+*   +   *   +  `;
+const _example = await parse(_rawExample);
+const _input = await parse(_rawInput);
 export const p1ex = () => p1(_example);
 export const p1 = (input = _input) => {
 	let grandTotal = 0;
