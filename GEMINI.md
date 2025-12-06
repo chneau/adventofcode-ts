@@ -24,27 +24,29 @@ undefined values, you can instead use a type assertion;
 
 ## Parsing input
 
-The parsing logic must use zod to validate the input data, see example below.
+The parsing logic must use zod and use `parseAsync` to validate the input data,
+see example below.
 
 ```ts
 import z from "zod";
 import { fetchInput } from "./session";
 
-const parse = (input: string) => {
-  const pre = input.split("\n").map((x) => x.split(" ").filter((x) => x));
-  return z
-    .object({
-      numbers: z.coerce.number().array().array(),
-      operations: z.literal(["+", "*"]).array(),
-      length: z.number(),
-    })
-    .parseAsync({
-      numbers: pre.slice(0, -1),
-      operations: pre.slice(-1)[0],
-      length: pre[0]?.length,
-    });
+const parse = async (input: string) => {
+	const pre = input.split("\n").map((x) => x.split(" ").filter((x) => x));
+	return z
+		.object({
+			numbers: z.coerce.number().array().array(),
+			operations: z.literal(["+", "*"]).array(),
+			length: z.number(),
+		})
+		.parseAsync({
+			numbers: pre.slice(0, -1),
+			operations: pre.slice(-1)[0],
+			length: pre[0]?.length,
+		});
 };
-const _input = await fetchInput().then(parse);
+const _raw = await fetchInput();
+const _input = await parse(_raw);
 const _example = await parse(`example_input_from_the_page_here`);
 ```
 
@@ -62,7 +64,8 @@ see it.
 ## Part 2 parser
 
 Sometimes, the parser for part 2 can be different than part 1, in that case,
-reuse or create new \_example2 and input2 as shown below.
+reuse or create new \_example2 and \_input2 as shown below. Do not forget to use
+`parseAsync` in that case as well. Zod is the preferred way to transform data.
 
 ```ts
 const _example2 = _example
