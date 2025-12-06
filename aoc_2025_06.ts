@@ -22,9 +22,28 @@ const _example = await parse(`123 328  51 64
 const _input = await fetchInput().then(parse);
 export const p1ex = () => p1(_example);
 export const p1 = (input = _input) => {
-	let result = 0;
-	result += input.length;
-	return result;
+	let grandTotal = 0;
+	for (let problemIdx = 0; problemIdx < input.length; problemIdx++) {
+		const operation = input.operations[problemIdx] as "+" | "*";
+		let problemResult: number | undefined;
+		for (let rowIdx = 0; rowIdx < input.numbers.length; rowIdx++) {
+			const num = input.numbers[rowIdx]?.[problemIdx] as number;
+			if (problemResult === undefined) {
+				problemResult = num;
+			} else {
+				if (operation === "+") {
+					problemResult += num;
+				} else if (operation === "*") {
+					problemResult *= num;
+				}
+			}
+		}
+		if (problemResult !== undefined) {
+			grandTotal += problemResult;
+		}
+	}
+
+	return grandTotal;
 };
 export const p2ex = () => p2(_example);
 export const p2 = (input = _input) => {

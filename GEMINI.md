@@ -13,9 +13,8 @@ in README.md.
    specified, zero-padded). this will create the file Only do this if the file
    does not already exist
 
-Notes: Typescript noUncheckedIndexedAccess is true, so do check for undefined
-when accessing arrays by index. Do not use "!" operator to assert null values,
-best you can do is to use zod to validate the data before accessing it.
+Notes: Typescript noUncheckedIndexedAccess is true, do not use "!" operator to
+assert undefined values, you can instead use a type assertion;
 
 ### for p1:
 
