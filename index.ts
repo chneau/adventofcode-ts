@@ -1,9 +1,29 @@
+import { Browser } from "happy-dom";
 import { bench, run } from "mitata";
 import z from "zod";
+import { session } from "./session";
 
-console.log("\x1B[2J\x1B[3J\x1B[H");
-const file = await z.string().parseAsync(Bun.argv[2]);
-const fileName = `./${file}.ts`;
+const argv = Bun.argv.slice(2);
+const problem = await z
+	.string()
+	.parseAsync(argv.find((x) => !x.startsWith("-")));
+const year = await z.coerce
+	.number()
+	.min(2015)
+	.parseAsync(problem.split("_").find((x) => x.length === 4));
+const day = await z.coerce
+	.number()
+	.min(1)
+	.max(25)
+	.parseAsync(problem.split("_").find((x) => x.length === 2));
+const options = await z
+	.string()
+	.array()
+	.parseAsync(argv.filter((x) => x.startsWith("-")));
+const isCreate = options.includes("--create");
+const isRead = options.includes("--read");
+
+const fileName = `./${problem}.ts`;
 const fileExists = await Bun.file(fileName).exists();
 if (!fileExists) {
 	await Bun.write(
@@ -20,7 +40,22 @@ export const p2 = (input = _input) => { let result = 0; result += input.length; 
 	);
 	await Bun.$`bun run all`;
 }
-console.log(`[++++++] Start ${file} [++++++]`);
+if (isCreate) {
+	await Bun.$`cat ${fileName}`;
+	process.exit(0);
+}
+if (isRead) {
+	const html =
+		await Bun.$`curl -s "https://adventofcode.com/${year}/day/${day}" -H "Cookie: session=${session}"`.text();
+	const browser = new Browser();
+	const page = browser.newPage();
+	page.content = html;
+	console.log(page.mainFrame.document.body.querySelector("main")?.innerText);
+	process.exit(0);
+}
+
+console.log("\x1B[2J\x1B[3J\x1B[H");
+console.log(`[++++++] Start ${fileName} [++++++]`);
 const pkg = await import(fileName);
 
 for (const key of Object.keys(pkg)) {

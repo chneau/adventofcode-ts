@@ -1,7 +1,7 @@
 import z from "zod";
 
 await Bun.$`mkdir -p .cache; touch .cache/session`;
-const session = await z
+export const session = await z
 	.string()
 	.nonempty()
 	.parseAsync(Bun.env.AOC_SESSION ?? (await Bun.file(".cache/session").text()));
