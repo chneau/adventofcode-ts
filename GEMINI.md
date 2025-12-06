@@ -2,15 +2,15 @@
 
 ## To get the problem for a day:
 
-Run `bun run index.ts aoc_YYYY_DD --read`.
+Run `bun index.ts aoc_YYYY_DD --read`.
 
 ## To create and read the content of a file for a day:
 
-Run `bun run index.ts aoc_YYYY_DD --create`.
+Run `bun index.ts aoc_YYYY_DD --create`.
 
 ## To run and benchmark a day:
 
-Run `bun run index.ts aoc_YYYY_DD`.
+Run `bun index.ts aoc_YYYY_DD`.
 
 ## To add a benchmark to the table:
 
@@ -35,24 +35,24 @@ undefined values, you can instead use a type assertion;
    import { fetchInput } from "./session";
 
    const parse = (input: string) =>
-   	z
-   		.array(z.union([z.tuple([z.number(), z.number()]), z.number()]))
-   		.parseAsync(
-   			input
-   				.split("\n")
-   				.map((line) => {
-   					if (line.trim() === "") return null;
-   					const rangeMatch = line.match(/^(\d+)-(\d+)$/);
-   					if (rangeMatch) {
-   						return [
-   							parseInt(rangeMatch[1] as string, 10),
-   							parseInt(rangeMatch[2] as string, 10),
-   						];
-   					}
-   					return parseInt(line, 10);
-   				})
-   				.filter((x) => x != null),
-   		);
+     z
+       .array(z.union([z.tuple([z.number(), z.number()]), z.number()]))
+       .parseAsync(
+         input
+           .split("\n")
+           .map((line) => {
+             if (line.trim() === "") return null;
+             const rangeMatch = line.match(/^(\d+)-(\d+)$/);
+             if (rangeMatch) {
+               return [
+                 parseInt(rangeMatch[1] as string, 10),
+                 parseInt(rangeMatch[2] as string, 10),
+               ];
+             }
+             return parseInt(line, 10);
+           })
+           .filter((x) => x != null)
+       );
    const _input = await fetchInput().then(parse);
    const _example = await parse(`example_input_from_the_page_here`);
    ```
