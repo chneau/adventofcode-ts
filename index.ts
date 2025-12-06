@@ -31,9 +31,10 @@ if (!fileExists) {
 		`import z from "zod";
 import { fetchInput } from "./session";
 const parse = async (input: string) => z.string().parseAsync(input);
-const _raw = await fetchInput();
-const _input = await parse(_raw);
-const _example = await parse(\`example_input_here\`);
+const _rawInput = await fetchInput();
+const _rawExample = \`example_input_here\`;
+const _example = await parse(_rawExample);
+const _input = await parse(_rawInput);
 export const p1ex = () => p1(_example);
 export const p1 = (input = _input) => { let result = 0; result += input.length; return result; };
 export const p2ex = () => p2(_example);
