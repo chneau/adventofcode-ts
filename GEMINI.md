@@ -13,6 +13,10 @@ in README.md.
    specified, zero-padded). this will create the file Only do this if the file
    does not already exist
 
+Notes: Typescript noUncheckedIndexedAccess is true, so do check for undefined
+when accessing arrays by index. Do not use "!" operator to assert null values,
+best you can do is to use zod to validate the data before accessing it.
+
 ### for p1:
 
 2. Read this file if the p1 is already written, skip it and go to `### for p2:`
