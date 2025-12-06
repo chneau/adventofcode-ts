@@ -2,7 +2,7 @@ import { bench, run } from "mitata";
 import z from "zod";
 
 console.log("\x1B[2J\x1B[3J\x1B[H");
-const file = z.string().parse(Bun.argv[2]);
+const file = await z.string().parseAsync(Bun.argv[2]);
 const fileName = `./${file}.ts`;
 const fileExists = await Bun.file(fileName).exists();
 if (!fileExists) {

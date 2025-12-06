@@ -2,7 +2,7 @@ import z from "zod";
 import { fetchInput } from "./session";
 
 const parse = (input: string) =>
-	z.array(z.union([z.tuple([z.number(), z.number()]), z.number()])).parse(
+	z.array(z.union([z.tuple([z.number(), z.number()]), z.number()])).parseAsync(
 		input
 			.split("\n")
 			.map((line) => {
@@ -19,7 +19,7 @@ const parse = (input: string) =>
 			.filter((x) => x != null),
 	);
 const _input = await fetchInput().then(parse);
-const _example = parse(`3-5
+const _example = await parse(`3-5
 10-14
 16-20
 12-18

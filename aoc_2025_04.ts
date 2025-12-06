@@ -5,9 +5,9 @@ const parse = (input: string) =>
 	z
 		.string()
 		.transform((x) => x.split("\n"))
-		.parse(input);
+		.parseAsync(input);
 const _input = await fetchInput().then(parse);
-const _example = parse(`..@@.@@@@.
+const _example = await parse(`..@@.@@@@.
 @@@.@.@.@@
 @@@@@.@.@@
 @.@@@@..@.

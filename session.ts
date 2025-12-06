@@ -1,15 +1,15 @@
 import z from "zod";
 
 await Bun.$`mkdir -p .cache; touch .cache/session`;
-const session = z
+const session = await z
 	.string()
 	.nonempty()
-	.parse(Bun.env.AOC_SESSION ?? (await Bun.file(".cache/session").text()));
+	.parseAsync(Bun.env.AOC_SESSION ?? (await Bun.file(".cache/session").text()));
 export const fetchInput = async () => {
-	const name = z.string().parse(Bun.argv[2]);
+	const name = await z.string().parseAsync(Bun.argv[2]);
 	const parts = name.split("_");
-	const year = z.coerce.number().parse(parts[1]);
-	const day = z.coerce.number().parse(parts[2]);
+	const year = await z.coerce.number().parseAsync(parts[1]);
+	const day = await z.coerce.number().parseAsync(parts[2]);
 	console.log(`https://adventofcode.com/${year}/day/${day}`);
 	const file = Bun.file(`.cache/${year}_${day}`);
 	const fileExist = await file.exists();
