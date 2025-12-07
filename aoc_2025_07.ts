@@ -78,15 +78,15 @@ export const p2 = (input = _input) => {
 		}
 		if (startR !== -1) break;
 	}
-    active.set(startC, 1);
+	active.set(startC, 1);
 
 	for (let r = startR + 1; r < input.length; r++) {
 		const nextActive = new Map<number, number>();
 		for (const [c, count] of active.entries()) {
-            let cell = '.'; // Assume empty space if outside the current row's explicit boundaries.
-            if (c >= 0 && c < (input[r]?.length ?? 0)) {
-                cell = input[r]?.[c] ?? '.';
-            }
+			let cell = "."; // Assume empty space if outside the current row's explicit boundaries.
+			if (c >= 0 && c < (input[r]?.length ?? 0)) {
+				cell = input[r]?.[c] ?? ".";
+			}
 
 			if (cell === "^") {
 				nextActive.set(c - 1, (nextActive.get(c - 1) || 0) + count);
