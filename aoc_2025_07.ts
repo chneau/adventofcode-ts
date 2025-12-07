@@ -63,7 +63,40 @@ export const p1 = (input = _input) => {
 };
 export const p2ex = () => p2(_example);
 export const p2 = (input = _input) => {
-	let result = 0;
-	result += input.length;
-	return result;
+	let active = new Map<number, number>();
+	let startR = -1;
+	let startC = -1;
+
+	// Find S
+	for (let r = 0; r < input.length; r++) {
+		for (let c = 0; c < (input[r]?.length ?? 0); c++) {
+			if (input[r]?.[c] === "S") {
+				startR = r;
+				startC = c;
+				break;
+			}
+		}
+		if (startR !== -1) break;
+	}
+    active.set(startC, 1);
+
+	for (let r = startR + 1; r < input.length; r++) {
+		const nextActive = new Map<number, number>();
+		for (const [c, count] of active.entries()) {
+            let cell = '.'; // Assume empty space if outside the current row's explicit boundaries.
+            if (c >= 0 && c < (input[r]?.length ?? 0)) {
+                cell = input[r]?.[c] ?? '.';
+            }
+
+			if (cell === "^") {
+				nextActive.set(c - 1, (nextActive.get(c - 1) || 0) + count);
+				nextActive.set(c + 1, (nextActive.get(c + 1) || 0) + count);
+			} else {
+				nextActive.set(c, (nextActive.get(c) || 0) + count);
+			}
+		}
+		active = nextActive;
+	}
+
+	return Array.from(active.values()).reduce((sum, count) => sum + count, 0);
 };
