@@ -1,13 +1,14 @@
 import z from "zod";
 import { fetchInput } from "./session";
 
+type Point = { x: number; y: number; z: number };
 const parse = async (input: string) =>
 	z
 		.array(z.string())
 		.transform((lines) =>
 			lines.map((line) => {
 				const [x, y, z] = line.split(",").map(Number);
-				return { x, y, z };
+				return { x, y, z } as Point;
 			}),
 		)
 		.parseAsync(input.split("\n"));
@@ -50,7 +51,7 @@ class DSU {
 		if (this.parent[i] === i) {
 			return i;
 		}
-		this.parent[i] = this.find(this.parent[i]);
+		this.parent[i] = this.find(this.parent[i] as number);
 		return this.parent[i];
 	}
 
@@ -59,12 +60,12 @@ class DSU {
 		const rootJ = this.find(j);
 
 		if (rootI !== rootJ) {
-			if (this.size[rootI] < this.size[rootJ]) {
+			if ((this.size[rootI] as number) < (this.size[rootJ] as number)) {
 				this.parent[rootI] = rootJ;
-				this.size[rootJ] += this.size[rootI];
+				(this.size[rootJ] as number) += this.size[rootI] as number;
 			} else {
 				this.parent[rootJ] = rootI;
-				this.size[rootI] += this.size[rootJ];
+				(this.size[rootI] as number) += this.size[rootJ] as number;
 			}
 			this.count--;
 			return true;
@@ -73,11 +74,8 @@ class DSU {
 	}
 }
 
-type Point = { x: number; y: number; z: number };
-
 export const p1ex = () => p1(_example, 10);
-export const p1 = (inputParam?: Point[], numConnections: number = 1000) => {
-    const input = inputParam ?? _input;
+export const p1 = (input = _input, numConnections: number = 1000) => {
 	const n = input.length;
 	const dsu = new DSU(n);
 
@@ -85,8 +83,8 @@ export const p1 = (inputParam?: Point[], numConnections: number = 1000) => {
 
 	for (let i = 0; i < n; i++) {
 		for (let j = i + 1; j < n; j++) {
-			const p1 = input[i];
-			const p2 = input[j];
+			const p1 = input[i] as Point;
+			const p2 = input[j] as Point;
 			const dx = p1.x - p2.x;
 			const dy = p1.y - p2.y;
 			const dz = p1.z - p2.z;
@@ -98,14 +96,14 @@ export const p1 = (inputParam?: Point[], numConnections: number = 1000) => {
 	edges.sort((a, b) => a.distanceSq - b.distanceSq);
 
 	for (let i = 0; i < numConnections && i < edges.length; i++) {
-        const edge = edges[i];
+		const edge = edges[i] as { u: number; v: number; distanceSq: number };
 		dsu.union(edge.u, edge.v);
 	}
 
 	const componentSizes: number[] = [];
 	for (let i = 0; i < n; i++) {
 		if (dsu.parent[i] === i) {
-			componentSizes.push(dsu.size[i]);
+			componentSizes.push(dsu.size[i] as number);
 		}
 	}
 
@@ -113,7 +111,7 @@ export const p1 = (inputParam?: Point[], numConnections: number = 1000) => {
 
 	let result = 1;
 	for (let i = 0; i < Math.min(3, componentSizes.length); i++) {
-		result *= componentSizes[i];
+		result *= componentSizes[i] as number;
 	}
 
 	return result;
