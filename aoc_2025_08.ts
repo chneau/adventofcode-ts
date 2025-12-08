@@ -74,11 +74,8 @@ class DSU {
 	}
 }
 
-export const p1ex = () => p1(_example, 10);
-export const p1 = (input = _input, numConnections: number = 1000) => {
+const getSortedEdges = (input: Point[]) => {
 	const n = input.length;
-	const dsu = new DSU(n);
-
 	const edges: { u: number; v: number; distanceSq: number }[] = [];
 
 	for (let i = 0; i < n; i++) {
@@ -94,6 +91,15 @@ export const p1 = (input = _input, numConnections: number = 1000) => {
 	}
 
 	edges.sort((a, b) => a.distanceSq - b.distanceSq);
+	return edges;
+};
+
+export const p1ex = () => p1(_example, 10);
+export const p1 = (input = _input, numConnections: number = 1000) => {
+	const n = input.length;
+	const dsu = new DSU(n);
+
+	const edges = getSortedEdges(input);
 
 	for (let i = 0; i < numConnections && i < edges.length; i++) {
 		const edge = edges[i] as { u: number; v: number; distanceSq: number };
@@ -119,7 +125,18 @@ export const p1 = (input = _input, numConnections: number = 1000) => {
 
 export const p2ex = () => p2(_example);
 export const p2 = (input = _input) => {
-	let result = 0;
-	result += input.length;
-	return result;
+	const n = input.length;
+	const dsu = new DSU(n);
+	const edges = getSortedEdges(input);
+
+	for (const edge of edges) {
+		if (dsu.union(edge.u, edge.v)) {
+			if (dsu.count === 1) {
+				const p1 = input[edge.u] as Point;
+				const p2 = input[edge.v] as Point;
+				return p1.x * p2.x;
+			}
+		}
+	}
+	return 0;
 };
