@@ -74,35 +74,44 @@ class DSU {
 	}
 }
 
-const getSortedEdges = (input: Point[]) => {
-	const n = input.length;
-	const edges: { u: number; v: number; distanceSq: number }[] = [];
-
-	for (let i = 0; i < n; i++) {
-		for (let j = i + 1; j < n; j++) {
-			const p1 = input[i] as Point;
-			const p2 = input[j] as Point;
-			const dx = p1.x - p2.x;
-			const dy = p1.y - p2.y;
-			const dz = p1.z - p2.z;
-			const distanceSq = dx * dx + dy * dy + dz * dz;
-			edges.push({ u: i, v: j, distanceSq });
-		}
-	}
-
-	edges.sort((a, b) => a.distanceSq - b.distanceSq);
-	return edges;
-};
-
 export const p1ex = () => p1(_example, 10);
 export const p1 = (input = _input, numConnections: number = 1000) => {
 	const n = input.length;
 	const dsu = new DSU(n);
 
-	const edges = getSortedEdges(input);
+	// Optimization: Only keep the smallest `numConnections` edges.
+	// We use a buffer and periodically sort/prune to keep memory low and avoid sorting N^2 items.
+	const edges: { u: number; v: number; distanceSq: number }[] = [];
+	const bufferSize = numConnections * 4;
+	let maxDistInSet = Infinity;
 
-	for (let i = 0; i < numConnections && i < edges.length; i++) {
-		const edge = edges[i] as { u: number; v: number; distanceSq: number };
+	for (let i = 0; i < n; i++) {
+		const p1 = input[i] as Point;
+		for (let j = i + 1; j < n; j++) {
+			const p2 = input[j] as Point;
+			const dx = p1.x - p2.x;
+			const dy = p1.y - p2.y;
+			const dz = p1.z - p2.z;
+			const distanceSq = dx * dx + dy * dy + dz * dz;
+
+			if (distanceSq < maxDistInSet) {
+				edges.push({ u: i, v: j, distanceSq });
+				if (edges.length >= bufferSize) {
+					edges.sort((a, b) => a.distanceSq - b.distanceSq);
+					edges.length = numConnections;
+					maxDistInSet = (edges[numConnections - 1] as { distanceSq: number })
+						.distanceSq;
+				}
+			}
+		}
+	}
+
+	edges.sort((a, b) => a.distanceSq - b.distanceSq);
+	if (edges.length > numConnections) {
+		edges.length = numConnections;
+	}
+
+	for (const edge of edges) {
 		dsu.union(edge.u, edge.v);
 	}
 
@@ -126,17 +135,57 @@ export const p1 = (input = _input, numConnections: number = 1000) => {
 export const p2ex = () => p2(_example);
 export const p2 = (input = _input) => {
 	const n = input.length;
-	const dsu = new DSU(n);
-	const edges = getSortedEdges(input);
+	// Prim's Algorithm to build MST O(N^2)
+	const minDist = new Float64Array(n).fill(Infinity);
+	const parent = new Int32Array(n).fill(-1);
+	const visited = new Uint8Array(n); // 0 or 1
+	minDist[0] = 0;
 
-	for (const edge of edges) {
-		if (dsu.union(edge.u, edge.v)) {
-			if (dsu.count === 1) {
-				const p1 = input[edge.u] as Point;
-				const p2 = input[edge.v] as Point;
-				return p1.x * p2.x;
+	let maxEdgeWeight = -1;
+	let uMax = -1;
+	let vMax = -1;
+
+	for (let i = 0; i < n; i++) {
+		let u = -1;
+		let minVal = Infinity;
+		// Find min unvisited node
+		for (let j = 0; j < n; j++) {
+			if (visited[j] === 0 && (minDist[j] as number) < minVal) {
+				minVal = minDist[j] as number;
+				u = j;
+			}
+		}
+
+		if (u === -1) break; // Should not happen for connected graph
+		visited[u] = 1;
+
+		// If not root, consider the edge used to reach u
+		if (parent[u] !== -1) {
+			const dist = minDist[u] as number;
+			if (dist > maxEdgeWeight) {
+				maxEdgeWeight = dist;
+				uMax = u;
+				vMax = parent[u] as number;
+			}
+		}
+
+		const p1 = input[u] as Point;
+		for (let v = 0; v < n; v++) {
+			if (visited[v] === 0) {
+				const p2 = input[v] as Point;
+				const dx = p1.x - p2.x;
+				const dy = p1.y - p2.y;
+				const dz = p1.z - p2.z;
+				const distSq = dx * dx + dy * dy + dz * dz;
+				if (distSq < (minDist[v] as number)) {
+					minDist[v] = distSq;
+					parent[v] = u;
+				}
 			}
 		}
 	}
-	return 0;
+
+	const pA = input[uMax] as Point;
+	const pB = input[vMax] as Point;
+	return pA.x * pB.x;
 };
