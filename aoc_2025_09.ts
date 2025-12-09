@@ -1,9 +1,6 @@
 import z from "zod";
 import { fetchInput } from "./session";
 
-const toKey = (x: number, y: number) => `${x},${y}`;
-const fromKey = (key: string) => key.split(",").map(Number) as [number, number];
-
 const parse = async (input: string) => {
 	return z
 		.array(
@@ -70,10 +67,20 @@ export const p2 = (input = _input) => {
 	const sortedY = Array.from(ySet).sort((a, b) => a - b);
 
 	const xMap = new Map<number, number>();
-	sortedX.forEach((x, i) => xMap.set(x, i));
+	sortedX.forEach((x, i) => {
+		xMap.set(x, i);
+	});
 
 	const yMap = new Map<number, number>();
-	sortedY.forEach((y, i) => yMap.set(y, i));
+	sortedY.forEach((y, i) => {
+		yMap.set(y, i);
+	});
+
+	const getIdx = (map: Map<number, number>, val: number) => {
+		const res = map.get(val);
+		if (res === undefined) throw new Error(`Value ${val} not found in map`);
+		return res;
+	};
 
 	const W = sortedX.length * 2 - 1;
 	const H = sortedY.length * 2 - 1;
@@ -83,7 +90,7 @@ export const p2 = (input = _input) => {
 	const setGrid = (r: number, c: number, val: number) => {
 		grid[r * W + c] = val;
 	};
-	const getGrid = (r: number, c: number) => grid[r * W + c];
+	const getGrid = (r: number, c: number) => grid[r * W + c] ?? 0;
 
 	const vSegments: { x: number; y1: number; y2: number }[] = [];
 	const hSegments: { y: number; x1: number; x2: number }[] = [];
@@ -109,9 +116,9 @@ export const p2 = (input = _input) => {
 
 	// 1. Mark Horizontal segments on Vertex Rows (Even rows)
 	for (const h of hSegments) {
-		const r = yMap.get(h.y)! * 2;
-		const c1 = xMap.get(h.x1)! * 2;
-		const c2 = xMap.get(h.x2)! * 2;
+		const r = getIdx(yMap, h.y) * 2;
+		const c1 = getIdx(xMap, h.x1) * 2;
+		const c2 = getIdx(xMap, h.x2) * 2;
 		for (let c = c1; c <= c2; c++) {
 			setGrid(r, c, 1);
 		}
@@ -124,11 +131,11 @@ export const p2 = (input = _input) => {
 
 		const walls: number[] = [];
 		for (const v of vSegments) {
-			const vy1 = yMap.get(v.y1)!;
-			const vy2 = yMap.get(v.y2)!;
+			const vy1 = getIdx(yMap, v.y1);
+			const vy2 = getIdx(yMap, v.y2);
 			// Check if vertical segment covers this interval
 			if (vy1 <= yStartIdx && vy2 >= yEndIdx) {
-				walls.push(xMap.get(v.x)! * 2);
+				walls.push(getIdx(xMap, v.x) * 2);
 			}
 		}
 		walls.sort((a, b) => a - b);
@@ -157,7 +164,7 @@ export const p2 = (input = _input) => {
 	const prefixSum = new Int32Array(W * H);
 	const getSum = (r: number, c: number) => {
 		if (r < 0 || c < 0) return 0;
-		return prefixSum[r * W + c];
+		return prefixSum[r * W + c] ?? 0;
 	};
 
 	for (let r = 0; r < H; r++) {
@@ -194,10 +201,10 @@ export const p2 = (input = _input) => {
 
 			if (t1.x === t2.x || t1.y === t2.y) continue;
 
-			const c1 = xMap.get(t1.x)! * 2;
-			const r1 = yMap.get(t1.y)! * 2;
-			const c2 = xMap.get(t2.x)! * 2;
-			const r2 = yMap.get(t2.y)! * 2;
+			const c1 = getIdx(xMap, t1.x) * 2;
+			const r1 = getIdx(yMap, t1.y) * 2;
+			const c2 = getIdx(xMap, t2.x) * 2;
+			const r2 = getIdx(yMap, t2.y) * 2;
 
 			const expectedCount = (Math.abs(r1 - r2) + 1) * (Math.abs(c1 - c2) + 1);
 			const actualCount = areaSum(r1, c1, r2, c2);
