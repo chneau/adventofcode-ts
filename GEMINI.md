@@ -12,7 +12,7 @@ Run `bun index.ts aoc_YYYY_DD --create`.
 
 ## To benchmark a day:
 
-Run `bun index.ts aoc_YYYY_DD`.
+Run `bun index.ts aoc_YYYY_DD --bench`.
 
 ## To add a benchmark to the table:
 
@@ -35,18 +35,18 @@ import z from "zod";
 import { fetchInput } from "./session";
 
 const parse = async (input: string) => {
-	const pre = input.split("\n").map((x) => x.split(" ").filter((x) => x));
-	return z
-		.object({
-			numbers: z.coerce.number().array().array(),
-			operations: z.literal(["+", "*"]).array(),
-			length: z.number(),
-		})
-		.parseAsync({
-			numbers: pre.slice(0, -1),
-			operations: pre.slice(-1)[0],
-			length: pre[0]?.length,
-		});
+  const pre = input.split("\n").map((x) => x.split(" ").filter((x) => x));
+  return z
+    .object({
+      numbers: z.coerce.number().array().array(),
+      operations: z.literal(["+", "*"]).array(),
+      length: z.number(),
+    })
+    .parseAsync({
+      numbers: pre.slice(0, -1),
+      operations: pre.slice(-1)[0],
+      length: pre[0]?.length,
+    });
 };
 const _raw = await fetchInput();
 const _input = await parse(_raw);

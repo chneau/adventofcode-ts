@@ -22,6 +22,7 @@ const options = await z
 	.parseAsync(argv.filter((x) => x.startsWith("-")));
 const isCreate = options.includes("--create");
 const isRead = options.includes("--read");
+const withBenchmark = options.includes("--bench");
 
 const fileName = `./${problem}.ts`;
 const fileExists = await Bun.file(fileName).exists();
@@ -68,6 +69,7 @@ for (const key of Object.keys(pkg)) {
 }
 console.log("[------] End [------]");
 
+if (!withBenchmark) process.exit(0);
 console.log("\n[++++++] Benchmark [++++++]");
 for (const key of Object.keys(pkg).filter((x) => !x.endsWith("ex"))) {
 	bench(key, pkg[key]);
