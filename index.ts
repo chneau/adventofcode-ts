@@ -61,8 +61,7 @@ console.log("\x1B[2J\x1B[3J\x1B[H");
 console.log(`[++++++] Start ${fileName} [++++++]`);
 const pkg = await import(fileName);
 
-const sortKeys = (obj: Record<string, any>) => {
-	// always alphabetical, but ex first
+const sortKeys = (obj: Record<string, unknown>) => {
 	return Object.keys(obj).sort((a, b) => {
 		if (a.endsWith("ex") && !b.endsWith("ex")) return -1;
 		if (!a.endsWith("ex") && b.endsWith("ex")) return 1;
