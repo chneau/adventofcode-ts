@@ -61,7 +61,16 @@ console.log("\x1B[2J\x1B[3J\x1B[H");
 console.log(`[++++++] Start ${fileName} [++++++]`);
 const pkg = await import(fileName);
 
-for (const key of Object.keys(pkg)) {
+const sortKeys = (obj: Record<string, any>) => {
+	// always alphabetical, but ex first
+	return Object.keys(obj).sort((a, b) => {
+		if (a.endsWith("ex") && !b.endsWith("ex")) return -1;
+		if (!a.endsWith("ex") && b.endsWith("ex")) return 1;
+		return a.localeCompare(b);
+	});
+};
+
+for (const key of sortKeys(pkg)) {
 	console.time(`Time ${key}`);
 	const result = await pkg[key]();
 	console.timeEnd(`Time ${key}`);
