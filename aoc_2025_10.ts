@@ -116,14 +116,6 @@ export const p2ex = () => p2(_example);
 export const p2 = (input = _input) => {
 	let totalMinPresses = 0;
 
-	// Pre-allocate assignment array to avoid allocation in loop
-	// Assuming max buttons is reasonably small (e.g. < 100)
-	// Finding max buttons for allocation size
-	let maxCols = 0;
-	if (input.length > 0) maxCols = (input[0] as { buttons: any[] }).buttons.length;
-	// Dynamic allocation inside loop is fine given P2 baseline is ~40ms and allocs are small.
-	// But let's be cleaner.
-
 	for (const machine of input) {
 		const targetJoltages = machine.joltage;
 		const buttons = machine.buttons;
@@ -184,7 +176,7 @@ export const p2 = (input = _input) => {
 			const div = M[pOff + col] as number;
 			const invDiv = 1.0 / div;
 			for (let k = col; k < stride; k++) {
-				M[pOff + k] *= invDiv;
+				(M[pOff + k] as number) *= invDiv;
 			}
 
 			// Eliminate other rows
@@ -194,7 +186,7 @@ export const p2 = (input = _input) => {
 					const fac = M[iOff + col] as number;
 					if (fac > 1e-9 || fac < -1e-9) {
 						for (let k = col; k < stride; k++) {
-							M[iOff + k] -= fac * (M[pOff + k] as number);
+							(M[iOff + k] as number) -= fac * (M[pOff + k] as number);
 						}
 					}
 				}
