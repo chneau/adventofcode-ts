@@ -15,15 +15,14 @@ export const p1ex = () => p1(_example);
 export const p1 = (input = _input) => {
 	let result = 0;
 	for (const line of input) {
-		if (!line) continue;
+		if (!line || line.length < 2) continue;
 		let best = 0;
-		for (let i = 0; i < line.length - 1; i++) {
-			const a = line.charCodeAt(i) - 48;
-			for (let j = i + 1; j < line.length; j++) {
-				const b = line.charCodeAt(j) - 48;
-				const val = a * 10 + b;
-				if (val > best) best = val;
-			}
+		let maxSuffix = line.charCodeAt(line.length - 1) - 48;
+		for (let i = line.length - 2; i >= 0; i--) {
+			const d = line.charCodeAt(i) - 48;
+			const val = d * 10 + maxSuffix;
+			if (val > best) best = val;
+			if (d > maxSuffix) maxSuffix = d;
 		}
 		result += best;
 	}
