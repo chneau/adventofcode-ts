@@ -56,161 +56,213 @@ export const p1 = (input = _input) => {
 };
 export const p2ex = () => p2(_example);
 export const p2 = (input = _input) => {
-	// Collect vertices and unique coordinates
+	const n = input.length;
+	const xs = new Int32Array(n);
+	const ys = new Int32Array(n);
 	const xSet = new Set<number>();
 	const ySet = new Set<number>();
-	for (const p of input) {
+
+	for (let i = 0; i < n; i++) {
+		const p = input[i] as { x: number; y: number };
+		xs[i] = p.x;
+		ys[i] = p.y;
 		xSet.add(p.x);
 		ySet.add(p.y);
 	}
-	const sortedX = Array.from(xSet).sort((a, b) => a - b);
-	const sortedY = Array.from(ySet).sort((a, b) => a - b);
 
+	const sortedX = new Int32Array(Array.from(xSet).sort((a, b) => a - b));
+	const sortedY = new Int32Array(Array.from(ySet).sort((a, b) => a - b));
+
+	// Pre-compute ranks
+	const xRanks = new Int32Array(n);
+	const yRanks = new Int32Array(n);
+
+	// Map lookup is fast enough for setup, or use binary search.
+	// Map is O(1) avg, Binary Search is O(log M). M is unique coords.
+	// Given M <= N, Map is fine.
 	const xMap = new Map<number, number>();
-	sortedX.forEach((x, i) => {
-		xMap.set(x, i);
-	});
-
+	sortedX.forEach((x, i) => xMap.set(x, i));
 	const yMap = new Map<number, number>();
-	sortedY.forEach((y, i) => {
-		yMap.set(y, i);
-	});
+	sortedY.forEach((y, i) => yMap.set(y, i));
 
-	const getIdx = (map: Map<number, number>, val: number) => {
-		const res = map.get(val);
-		if (res === undefined) throw new Error(`Value ${val} not found in map`);
-		return res;
-	};
+	for (let i = 0; i < n; i++) {
+		xRanks[i] = xMap.get(xs[i] as number) as number;
+		yRanks[i] = yMap.get(ys[i] as number) as number;
+	}
 
 	const W = sortedX.length * 2 - 1;
 	const H = sortedY.length * 2 - 1;
-
-	// Grid: 0 = invalid, 1 = valid
 	const grid = new Int8Array(W * H);
-	const setGrid = (r: number, c: number, val: number) => {
-		grid[r * W + c] = val;
-	};
-	const getGrid = (r: number, c: number) => grid[r * W + c] ?? 0;
 
-	const vSegments: { x: number; y1: number; y2: number }[] = [];
-	const hSegments: { y: number; x1: number; x2: number }[] = [];
+	// Store segments efficiently
+	// vSegments: x, y1, y2 (ranks)
+	// hSegments: y, x1, x2 (ranks)
+	// We don't know the count exactly, roughly N/2 each.
+	// Just use dynamic arrays or pre-allocate N size.
+	const vSegX = new Int32Array(n);
+	const vSegY1 = new Int32Array(n);
+	const vSegY2 = new Int32Array(n);
+	let vCount = 0;
 
-	for (let i = 0; i < input.length; i++) {
-		const p1 = input[i] as { x: number; y: number };
-		const p2 = input[(i + 1) % input.length] as { x: number; y: number };
+	const hSegY = new Int32Array(n);
+	const hSegX1 = new Int32Array(n);
+	const hSegX2 = new Int32Array(n);
+	let hCount = 0;
 
-		if (p1.x === p2.x) {
-			vSegments.push({
-				x: p1.x,
-				y1: Math.min(p1.y, p2.y),
-				y2: Math.max(p1.y, p2.y),
-			});
+	for (let i = 0; i < n; i++) {
+		const next = (i + 1) % n;
+		const x1 = xs[i] as number;
+		const y1 = ys[i] as number;
+		const x2 = xs[next] as number;
+		const y2 = ys[next] as number;
+
+		const xr1 = xRanks[i] as number;
+		const yr1 = yRanks[i] as number;
+		const xr2 = xRanks[next] as number;
+		const yr2 = yRanks[next] as number;
+
+		if (x1 === x2) {
+			vSegX[vCount] = xr1;
+			vSegY1[vCount] = Math.min(yr1, yr2);
+			vSegY2[vCount] = Math.max(yr1, yr2);
+			vCount++;
 		} else {
-			hSegments.push({
-				y: p1.y,
-				x1: Math.min(p1.x, p2.x),
-				x2: Math.max(p1.x, p2.x),
-			});
+			hSegY[hCount] = yr1;
+			hSegX1[hCount] = Math.min(xr1, xr2);
+			hSegX2[hCount] = Math.max(xr1, xr2);
+			hCount++;
 		}
 	}
 
-	// 1. Mark Horizontal segments on Vertex Rows (Even rows)
-	for (const h of hSegments) {
-		const r = getIdx(yMap, h.y) * 2;
-		const c1 = getIdx(xMap, h.x1) * 2;
-		const c2 = getIdx(xMap, h.x2) * 2;
-		for (let c = c1; c <= c2; c++) {
-			setGrid(r, c, 1);
-		}
+	// 1. Mark Horizontal segments
+	for (let i = 0; i < hCount; i++) {
+		const r = (hSegY[i] as number) * 2;
+		const c1 = (hSegX1[i] as number) * 2;
+		const c2 = (hSegX2[i] as number) * 2;
+		// setGrid(r, c, 1)
+		const rowOffset = r * W;
+		grid.fill(1, rowOffset + c1, rowOffset + c2 + 1);
 	}
 
-	// 2. Process Interval Rows (Odd rows) using Scan-line Parity
+	// 2. Interval Rows (Odd rows)
+	// Optimize: The walls array.
+	const walls = new Int32Array(vCount); // Reuse buffer
 	for (let r = 1; r < H; r += 2) {
-		const yStartIdx = (r - 1) / 2;
-		const yEndIdx = (r + 1) / 2;
+		const yStartIdx = (r - 1) >>> 1;
+		const yEndIdx = (r + 1) >>> 1;
 
-		const walls: number[] = [];
-		for (const v of vSegments) {
-			const vy1 = getIdx(yMap, v.y1);
-			const vy2 = getIdx(yMap, v.y2);
-			// Check if vertical segment covers this interval
-			if (vy1 <= yStartIdx && vy2 >= yEndIdx) {
-				walls.push(getIdx(xMap, v.x) * 2);
+		let wCount = 0;
+		for (let i = 0; i < vCount; i++) {
+			if (
+				(vSegY1[i] as number) <= yStartIdx &&
+				(vSegY2[i] as number) >= yEndIdx
+			) {
+				walls[wCount++] = (vSegX[i] as number) * 2;
 			}
 		}
-		walls.sort((a, b) => a - b);
 
-		for (let k = 0; k < walls.length; k += 2) {
-			if (k + 1 >= walls.length) break;
+		walls.subarray(0, wCount).sort();
+
+		const rowOffset = r * W;
+		for (let k = 0; k < wCount; k += 2) {
 			const start = walls[k] as number;
-			const end = walls[k + 1] as number;
-			for (let c = start; c <= end; c++) {
-				setGrid(r, c, 1);
-			}
+			const end = walls[k + 1] as number; // Should exist if parity holds
+			grid.fill(1, rowOffset + start, rowOffset + end + 1);
 		}
 	}
 
-	// 3. Update Vertex Rows (Even rows) by Union with neighbors
+	// 3. Update Vertex Rows (Even rows)
 	for (let r = 0; r < H; r += 2) {
+		const rowOffset = r * W;
+		const prevRowOffset = (r - 1) * W;
+		const nextRowOffset = (r + 1) * W;
 		for (let c = 0; c < W; c++) {
-			let val = getGrid(r, c);
-			if (r > 0) val |= getGrid(r - 1, c);
-			if (r < H - 1) val |= getGrid(r + 1, c);
-			if (val) setGrid(r, c, 1);
+			let val = grid[rowOffset + c] as number;
+			if (val === 0) {
+				if (r > 0 && (grid[prevRowOffset + c] as number) !== 0) val = 1;
+				else if (r < H - 1 && (grid[nextRowOffset + c] as number) !== 0) val = 1;
+				if (val !== 0) grid[rowOffset + c] = 1;
+			}
 		}
 	}
 
 	// Build 2D Prefix Sum
 	const prefixSum = new Int32Array(W * H);
-	const getSum = (r: number, c: number) => {
-		if (r < 0 || c < 0) return 0;
-		return prefixSum[r * W + c] ?? 0;
-	};
+	// Unroll the loop slightly or just standard iteration
+	// First cell
+	prefixSum[0] = grid[0] as number;
 
-	for (let r = 0; r < H; r++) {
-		for (let c = 0; c < W; c++) {
-			const val = getGrid(r, c);
-			const top = getSum(r - 1, c);
-			const left = getSum(r, c - 1);
-			const diag = getSum(r - 1, c - 1);
-			prefixSum[r * W + c] = val + top + left - diag;
+	// First row
+	for (let c = 1; c < W; c++) {
+		prefixSum[c] = (prefixSum[c - 1] as number) + (grid[c] as number);
+	}
+	// First col
+	for (let r = 1; r < H; r++) {
+		prefixSum[r * W] =
+			(prefixSum[(r - 1) * W] as number) + (grid[r * W] as number);
+	}
+	// Rest
+	for (let r = 1; r < H; r++) {
+		const rowOff = r * W;
+		const prevRowOff = (r - 1) * W;
+		for (let c = 1; c < W; c++) {
+			const val = grid[rowOff + c] as number;
+			const top = prefixSum[prevRowOff + c] as number;
+			const left = prefixSum[rowOff + c - 1] as number;
+			const diag = prefixSum[prevRowOff + c - 1] as number;
+			prefixSum[rowOff + c] = val + top + left - diag;
 		}
 	}
 
-	const areaSum = (r1: number, c1: number, r2: number, c2: number) => {
-		const rMin = Math.min(r1, r2);
-		const rMax = Math.max(r1, r2);
-		const cMin = Math.min(c1, c2);
-		const cMax = Math.max(c1, c2);
-
-		return (
-			getSum(rMax, cMax) -
-			getSum(rMin - 1, cMax) -
-			getSum(rMax, cMin - 1) +
-			getSum(rMin - 1, cMin - 1)
-		);
-	};
-
+	// Helper inline manually
+	// getSum(r, c) => if r<0|c<0 0 else prefixSum[...]
 	let maxArea = 0;
 
-	// Iterate pairs
-	for (let i = 0; i < input.length; i++) {
-		for (let j = i + 1; j < input.length; j++) {
-			const t1 = input[i] as { x: number; y: number };
-			const t2 = input[j] as { x: number; y: number };
+	for (let i = 0; i < n; i++) {
+		const t1x = xs[i] as number;
+		const t1y = ys[i] as number;
+		const r1 = (yRanks[i] as number) * 2;
+		const c1 = (xRanks[i] as number) * 2;
 
-			if (t1.x === t2.x || t1.y === t2.y) continue;
+		for (let j = i + 1; j < n; j++) {
+			const t2x = xs[j] as number;
+			const t2y = ys[j] as number;
 
-			const c1 = getIdx(xMap, t1.x) * 2;
-			const r1 = getIdx(yMap, t1.y) * 2;
-			const c2 = getIdx(xMap, t2.x) * 2;
-			const r2 = getIdx(yMap, t2.y) * 2;
+			if (t1x === t2x || t1y === t2y) continue;
 
-			const expectedCount = (Math.abs(r1 - r2) + 1) * (Math.abs(c1 - c2) + 1);
-			const actualCount = areaSum(r1, c1, r2, c2);
+			const r2 = (yRanks[j] as number) * 2;
+			const c2 = (xRanks[j] as number) * 2;
+
+			// Expected count
+			const hGrid = Math.abs(r1 - r2) + 1;
+			const wGrid = Math.abs(c1 - c2) + 1;
+			const expectedCount = hGrid * wGrid;
+
+			// AreaSum
+			const rMin = r1 < r2 ? r1 : r2;
+			const rMax = r1 > r2 ? r1 : r2;
+			const cMin = c1 < c2 ? c1 : c2;
+			const cMax = c1 > c2 ? c1 : c2;
+
+			// getSum(rMax, cMax)
+			const s1 = prefixSum[rMax * W + cMax] as number;
+			// getSum(rMin - 1, cMax)
+			const s2 =
+				rMin - 1 < 0 ? 0 : (prefixSum[(rMin - 1) * W + cMax] as number);
+			// getSum(rMax, cMin - 1)
+			const s3 =
+				cMin - 1 < 0 ? 0 : (prefixSum[rMax * W + cMin - 1] as number);
+			// getSum(rMin - 1, cMin - 1)
+			const s4 =
+				rMin - 1 < 0 || cMin - 1 < 0
+					? 0
+					: (prefixSum[(rMin - 1) * W + cMin - 1] as number);
+
+			const actualCount = s1 - s2 - s3 + s4;
 
 			if (actualCount === expectedCount) {
-				const area = (Math.abs(t1.x - t2.x) + 1) * (Math.abs(t1.y - t2.y) + 1);
+				const area =
+					(Math.abs(t1x - t2x) + 1) * (Math.abs(t1y - t2y) + 1);
 				if (area > maxArea) maxArea = area;
 			}
 		}
