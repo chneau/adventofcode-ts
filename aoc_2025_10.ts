@@ -4,19 +4,19 @@ import { fetchInput } from "./session";
 const parseMachine = z.object({
 	diagram: z.array(z.boolean()), // e.g., [false, true, true, false] for [.##.]
 	buttons: z.array(z.array(z.number())), // e.g., [[3], [1,3], [2], [2,3], [0,2], [0,1]]
+	joltage: z.array(z.number()),
 });
-
 const parse = async (input: string) => {
 	return z.array(parseMachine).parseAsync(
 		input
 			.split("\n")
 			.filter(Boolean)
 			.map((line) => {
-				const [, diagramStr, buttonsStr] = line.match(
-					/\[(.*?)\]\s+\((.*?)\)\s+\{.*?}/,
+				const [, diagramStr, buttonsStr, joltageStr] = line.match(
+					/\[(.*?)\]\s+\((.*?)\)\s+\{(.*?)\}/,
 				) as RegExpMatchArray;
 
-				if (!diagramStr || !buttonsStr) {
+				if (!diagramStr || !buttonsStr || !joltageStr) {
 					throw new Error(`Invalid line format: ${line}`);
 				}
 
@@ -34,7 +34,12 @@ const parse = async (input: string) => {
 					})
 					.filter((arr) => arr.length > 0);
 
-				return { diagram, buttons };
+				const joltage = joltageStr
+					.split(",")
+					.map(Number)
+					.filter((s) => !Number.isNaN(s));
+
+				return { diagram, buttons, joltage };
 			}),
 	);
 };
@@ -89,6 +94,74 @@ export const p1 = (input = _input) => {
 };
 export const p2ex = () => p2(_example);
 export const p2 = (input = _input) => {
-	const result = 0;
-	return result;
+	let totalMinPresses = 0;
+
+	for (const machine of input) {
+		const targetJoltages = machine.joltage;
+		const buttons = machine.buttons;
+		const numCounters = targetJoltages.length;
+		const numButtons = buttons.length;
+
+		const queue: [number[], number][] = []; // [currentJoltages, pressesCount]
+		const dist = new Map<string, number>(); // stateKey -> minPresses
+
+		const initialState = new Array(numCounters).fill(0);
+		queue.push([initialState, 0]);
+		dist.set(initialState.join(","), 0);
+
+		let minPressesForMachine = Infinity;
+		const targetStateKey = targetJoltages.join(",");
+
+		let head = 0;
+		while (head < queue.length) {
+			const [currentJoltages, currentPresses] = queue[head++] as [
+				number[],
+				number,
+			];
+			const currentStateKey = currentJoltages.join(",");
+
+			if (currentStateKey === targetStateKey) {
+				minPressesForMachine = Math.min(minPressesForMachine, currentPresses);
+				continue; // Found target, but might find shorter path to *other* states later.
+			}
+
+			// Optimization: if we already found a shorter path to this state, skip
+			if (currentPresses > (dist.get(currentStateKey) ?? Infinity)) {
+				continue;
+			}
+
+			for (let buttonIndex = 0; buttonIndex < numButtons; buttonIndex++) {
+				const nextJoltages = [...currentJoltages];
+				let validNextState = true;
+
+				for (const counterToAffect of buttons[buttonIndex] as number[]) {
+					if (counterToAffect < 0 || counterToAffect >= numCounters) {
+						validNextState = false;
+						break;
+					}
+					(nextJoltages[counterToAffect] as number)++;
+					if (
+						(nextJoltages[counterToAffect] as number) >
+						(targetJoltages[counterToAffect] as number)
+					) {
+						validNextState = false;
+						break;
+					}
+				}
+
+				if (validNextState) {
+					const nextStateKey = nextJoltages.join(",");
+					if (
+						dist.get(nextStateKey) === undefined ||
+						currentPresses + 1 < (dist.get(nextStateKey) as number)
+					) {
+						dist.set(nextStateKey, currentPresses + 1);
+						queue.push([nextJoltages, currentPresses + 1]);
+					}
+				}
+			}
+		}
+		totalMinPresses += minPressesForMachine;
+	}
+	return totalMinPresses;
 };
