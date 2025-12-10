@@ -129,8 +129,9 @@ export const p2 = (input = _input) => {
 			while (
 				sel < numRows &&
 				Math.abs((M[sel] as number[])[col] as number) < 1e-9
-			)
+			) {
 				sel++;
+			}
 			if (sel === numRows) continue;
 
 			// Swap
