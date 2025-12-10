@@ -99,69 +99,155 @@ export const p2 = (input = _input) => {
 	for (const machine of input) {
 		const targetJoltages = machine.joltage;
 		const buttons = machine.buttons;
-		const numCounters = targetJoltages.length;
-		const numButtons = buttons.length;
+		const numRows = targetJoltages.length;
+		const numCols = buttons.length;
 
-		const queue: [number[], number][] = []; // [currentJoltages, pressesCount]
-		const dist = new Map<string, number>(); // stateKey -> minPresses
-
-		const initialState = new Array(numCounters).fill(0);
-		queue.push([initialState, 0]);
-		dist.set(initialState.join(","), 0);
-
-		let minPressesForMachine = Infinity;
-		const targetStateKey = targetJoltages.join(",");
-
-		let head = 0;
-		while (head < queue.length) {
-			const [currentJoltages, currentPresses] = queue[head++] as [
-				number[],
-				number,
-			];
-			const currentStateKey = currentJoltages.join(",");
-
-			if (currentStateKey === targetStateKey) {
-				minPressesForMachine = Math.min(minPressesForMachine, currentPresses);
-				continue; // Found target, but might find shorter path to *other* states later.
-			}
-
-			// Optimization: if we already found a shorter path to this state, skip
-			if (currentPresses > (dist.get(currentStateKey) ?? Infinity)) {
-				continue;
-			}
-
-			for (let buttonIndex = 0; buttonIndex < numButtons; buttonIndex++) {
-				const nextJoltages = [...currentJoltages];
-				let validNextState = true;
-
-				for (const counterToAffect of buttons[buttonIndex] as number[]) {
-					if (counterToAffect < 0 || counterToAffect >= numCounters) {
-						validNextState = false;
-						break;
-					}
-					(nextJoltages[counterToAffect] as number)++;
-					if (
-						(nextJoltages[counterToAffect] as number) >
-						(targetJoltages[counterToAffect] as number)
-					) {
-						validNextState = false;
-						break;
-					}
-				}
-
-				if (validNextState) {
-					const nextStateKey = nextJoltages.join(",");
-					if (
-						dist.get(nextStateKey) === undefined ||
-						currentPresses + 1 < (dist.get(nextStateKey) as number)
-					) {
-						dist.set(nextStateKey, currentPresses + 1);
-						queue.push([nextJoltages, currentPresses + 1]);
-					}
-				}
+		// Matrix A: A[row][col] = 1 if button col affects row
+		const A = Array(numRows)
+			.fill(0)
+			.map(() => Array(numCols).fill(0)) as number[][];
+		for (let c = 0; c < numCols; c++) {
+			for (const r of buttons[c] as number[]) {
+				if (r < numRows) (A[r] as number[])[c] = 1;
 			}
 		}
-		totalMinPresses += minPressesForMachine;
+
+		// Augmented Matrix M = [A | T]
+		const M = A.map((row, i) => [
+			...row,
+			targetJoltages[i] as number,
+		]) as number[][];
+
+		// Gaussian Elimination
+		const pivotColOfRow = Array(numRows).fill(-1);
+		let pivotRow = 0;
+		const pivotCols = new Set<number>();
+
+		for (let col = 0; col < numCols && pivotRow < numRows; col++) {
+			// Find pivot
+			let sel = pivotRow;
+			while (
+				sel < numRows &&
+				Math.abs((M[sel] as number[])[col] as number) < 1e-9
+			)
+				sel++;
+			if (sel === numRows) continue;
+
+			// Swap
+			[M[pivotRow], M[sel]] = [M[sel] as number[], M[pivotRow] as number[]];
+
+			// Normalize pivot row
+			const div = (M[pivotRow] as number[])[col] as number;
+			for (let k = col; k <= numCols; k++) {
+				((M[pivotRow] as number[])[k] as number) /= div;
+			}
+
+			// Eliminate other rows
+			for (let i = 0; i < numRows; i++) {
+				if (i !== pivotRow) {
+					const fac = (M[i] as number[])[col] as number;
+					if (Math.abs(fac) > 1e-9) {
+						for (let k = col; k <= numCols; k++) {
+							((M[i] as number[])[k] as number) -=
+								fac * ((M[pivotRow] as number[])[k] as number);
+						}
+					}
+				}
+			}
+
+			pivotColOfRow[pivotRow] = col;
+			pivotCols.add(col);
+			pivotRow++;
+		}
+
+		// Check for inconsistency (0 = non-zero) in remaining rows
+		let consistent = true;
+		for (let i = pivotRow; i < numRows; i++) {
+			if (Math.abs((M[i] as number[])[numCols] as number) > 1e-9) {
+				consistent = false;
+				break;
+			}
+		}
+
+		if (!consistent) {
+			// No solution possible
+			continue;
+		}
+
+		// Identify Free Variables
+		const freeCols: number[] = [];
+		for (let c = 0; c < numCols; c++) {
+			if (!pivotCols.has(c)) freeCols.push(c);
+		}
+
+		// Calculate conservative upper bounds for free variables
+		// A free variable can't be pressed more than min(Target[r]) for any r it affects,
+		// because all coeffs are non-negative in original problem.
+		const freeVarBounds = freeCols.map((col) => {
+			let limit = Infinity;
+			for (let r = 0; r < numRows; r++) {
+				if ((((A as number[][])[r] as number[])[col] as number) > 0) {
+					limit = Math.min(limit, targetJoltages[r] as number);
+				}
+			}
+			return limit === Infinity ? 277 : limit; // Fallback to max seen joltage
+		});
+
+		let minPressesForMachine = Infinity;
+		const assignment = Array(numCols).fill(0);
+
+		const search = (freeIdx: number, currentFreeSum: number) => {
+			// Pruning
+			if (currentFreeSum >= minPressesForMachine) return;
+
+			if (freeIdx === freeCols.length) {
+				// Calculate Dependent Variables (Pivots)
+				let currentTotal = currentFreeSum;
+				let valid = true;
+
+				// We need to check all pivot rows
+				for (let i = 0; i < pivotRow; i++) {
+					let val = (M[i] as number[])[numCols] as number; // RHS
+					for (let k = 0; k < freeCols.length; k++) {
+						const fc = freeCols[k] as number;
+						val -= ((M[i] as number[])[fc] as number) * assignment[fc];
+					}
+
+					// Check integer and non-negative
+					if (val < -1e-4) {
+						valid = false;
+						break;
+					}
+					const roundVal = Math.round(val);
+					if (Math.abs(val - roundVal) > 1e-4) {
+						valid = false;
+						break;
+					}
+					currentTotal += roundVal;
+				}
+
+				if (valid) {
+					if (currentTotal < minPressesForMachine) {
+						minPressesForMachine = currentTotal;
+					}
+				}
+				return;
+			}
+
+			const col = freeCols[freeIdx] as number;
+			const limit = freeVarBounds[freeIdx] as number;
+
+			for (let val = 0; val <= limit; val++) {
+				assignment[col] = val;
+				search(freeIdx + 1, currentFreeSum + val);
+			}
+		};
+
+		search(0, 0);
+
+		if (minPressesForMachine !== Infinity) {
+			totalMinPresses += minPressesForMachine;
+		}
 	}
 	return totalMinPresses;
 };
