@@ -57,7 +57,6 @@ if (isRead) {
 	process.exit(0);
 }
 
-console.log("\x1B[2J\x1B[3J\x1B[H");
 console.log(`[++++++] Start ${fileName} [++++++]`);
 const pkg = await import(fileName);
 
@@ -77,10 +76,11 @@ for (const key of sortKeys(pkg)) {
 }
 console.log("[------] End [------]");
 
-if (!withBenchmark) process.exit(0);
-console.log("\n[++++++] Benchmark [++++++]");
-for (const key of Object.keys(pkg).filter((x) => !x.endsWith("ex"))) {
-	bench(key, pkg[key]);
+if (withBenchmark) {
+	console.log("\n[++++++] Benchmark [++++++]");
+	for (const key of Object.keys(pkg).filter((x) => !x.endsWith("ex"))) {
+		bench(key, pkg[key]);
+	}
+	await run();
+	console.log("[------] End [------]");
 }
-await run();
-console.log("[------] End [------]");
