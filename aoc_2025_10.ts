@@ -56,165 +56,226 @@ export const p1 = (input = _input) => {
 	for (const machine of input) {
 		const targetDiagram = machine.diagram;
 		const buttons = machine.buttons;
-		const numLights = targetDiagram.length;
 		const numButtons = buttons.length;
+		const numLights = targetDiagram.length;
+
+		let target = 0n;
+		for (let i = 0; i < numLights; i++) {
+			if (targetDiagram[i]) target |= 1n << BigInt(i);
+		}
+
+		const btnMasks = new BigUint64Array(numButtons);
+		for (let i = 0; i < numButtons; i++) {
+			let b = 0n;
+			const indices = buttons[i] as number[];
+			for (let j = 0; j < indices.length; j++) {
+				b |= 1n << BigInt(indices[j] as number);
+			}
+			btnMasks[i] = b;
+		}
 
 		let minPressesForMachine = Infinity;
+		if (target === 0n) minPressesForMachine = 0;
 
-		for (let i = 0; i < 1 << numButtons; i++) {
-			const currentLights = new Array(numLights).fill(false);
-			let pressesCount = 0;
+		let current = 0n;
+		let gray = 0;
+		let pressCount = 0;
+		const limit = 1 << numButtons;
 
-			for (let j = 0; j < numButtons; j++) {
-				if ((i >> j) & 1) {
-					pressesCount++;
-					for (const lightIndex of buttons[j] as number[]) {
-						if (lightIndex >= 0 && lightIndex < numLights) {
-							currentLights[lightIndex] = !currentLights[lightIndex];
-						}
-					}
-				}
+		for (let i = 1; i < limit; i++) {
+			// ctz(i)
+			const bit = 31 - Math.clz32(i & -i);
+
+			current ^= btnMasks[bit] as bigint;
+
+			// Update gray state and press count
+			// gray code property: we flip the 'bit'-th bit of the gray code value
+			if ((gray >> bit) & 1) {
+				pressCount--;
+				gray ^= 1 << bit;
+			} else {
+				pressCount++;
+				gray ^= 1 << bit;
 			}
 
-			let matches = true;
-			for (let k = 0; k < numLights; k++) {
-				if (currentLights[k] !== targetDiagram[k]) {
-					matches = false;
-					break;
+			if (current === target) {
+				if (pressCount < minPressesForMachine) {
+					minPressesForMachine = pressCount;
 				}
-			}
-
-			if (matches) {
-				minPressesForMachine = Math.min(minPressesForMachine, pressesCount);
 			}
 		}
-		totalMinPresses += minPressesForMachine;
+
+		if (minPressesForMachine !== Infinity) {
+			totalMinPresses += minPressesForMachine;
+		}
 	}
 	return totalMinPresses;
 };
+
 export const p2ex = () => p2(_example);
 export const p2 = (input = _input) => {
 	let totalMinPresses = 0;
+
+	// Pre-allocate assignment array to avoid allocation in loop
+	// Assuming max buttons is reasonably small (e.g. < 100)
+	// Finding max buttons for allocation size
+	let maxCols = 0;
+	if (input.length > 0) maxCols = (input[0] as { buttons: any[] }).buttons.length;
+	// Dynamic allocation inside loop is fine given P2 baseline is ~40ms and allocs are small.
+	// But let's be cleaner.
 
 	for (const machine of input) {
 		const targetJoltages = machine.joltage;
 		const buttons = machine.buttons;
 		const numRows = targetJoltages.length;
 		const numCols = buttons.length;
-
-		// Matrix A: A[row][col] = 1 if button col affects row
-		const A = Array(numRows)
-			.fill(0)
-			.map(() => Array(numCols).fill(0)) as number[][];
-		for (let c = 0; c < numCols; c++) {
-			for (const r of buttons[c] as number[]) {
-				if (r < numRows) (A[r] as number[])[c] = 1;
-			}
-		}
+		const stride = numCols + 1;
 
 		// Augmented Matrix M = [A | T]
-		const M = A.map((row, i) => [
-			...row,
-			targetJoltages[i] as number,
-		]) as number[][];
+		// Flattened: M[r, c] -> M[r * stride + c]
+		const M = new Float64Array(numRows * stride);
+
+		// Fill Matrix
+		// A[r][c] = 1 if button c affects row r
+		for (let c = 0; c < numCols; c++) {
+			const btnRows = buttons[c] as number[];
+			for (let k = 0; k < btnRows.length; k++) {
+				const r = btnRows[k] as number;
+				if (r < numRows) {
+					M[r * stride + c] = 1.0;
+				}
+			}
+		}
+		// Fill Target column
+		for (let r = 0; r < numRows; r++) {
+			M[r * stride + numCols] = targetJoltages[r] as number;
+		}
 
 		// Gaussian Elimination
-		const pivotColOfRow = Array(numRows).fill(-1);
+		const pivotColOfRow = new Int32Array(numRows).fill(-1);
 		let pivotRow = 0;
-		const pivotCols = new Set<number>();
+		// Bitset for pivot cols would be fast, but simple boolean array or Set is fine for small N
+		// Using Int8Array for pivotCols lookup
+		const isPivotCol = new Uint8Array(numCols);
 
 		for (let col = 0; col < numCols && pivotRow < numRows; col++) {
 			// Find pivot
 			let sel = pivotRow;
-			while (
-				sel < numRows &&
-				Math.abs((M[sel] as number[])[col] as number) < 1e-9
-			) {
+			while (sel < numRows) {
+				const val = M[sel * stride + col] as number;
+				if (val > 1e-9 || val < -1e-9) break;
 				sel++;
 			}
 			if (sel === numRows) continue;
 
-			// Swap
-			[M[pivotRow], M[sel]] = [M[sel] as number[], M[pivotRow] as number[]];
+			// Swap rows
+			if (sel !== pivotRow) {
+				const off1 = pivotRow * stride;
+				const off2 = sel * stride;
+				for (let k = col; k < stride; k++) {
+					const tmp = M[off1 + k] as number;
+					M[off1 + k] = M[off2 + k] as number;
+					M[off2 + k] = tmp;
+				}
+			}
 
 			// Normalize pivot row
-			const div = (M[pivotRow] as number[])[col] as number;
-			for (let k = col; k <= numCols; k++) {
-				((M[pivotRow] as number[])[k] as number) /= div;
+			const pOff = pivotRow * stride;
+			const div = M[pOff + col] as number;
+			const invDiv = 1.0 / div;
+			for (let k = col; k < stride; k++) {
+				M[pOff + k] *= invDiv;
 			}
 
 			// Eliminate other rows
 			for (let i = 0; i < numRows; i++) {
 				if (i !== pivotRow) {
-					const fac = (M[i] as number[])[col] as number;
-					if (Math.abs(fac) > 1e-9) {
-						for (let k = col; k <= numCols; k++) {
-							((M[i] as number[])[k] as number) -=
-								fac * ((M[pivotRow] as number[])[k] as number);
+					const iOff = i * stride;
+					const fac = M[iOff + col] as number;
+					if (fac > 1e-9 || fac < -1e-9) {
+						for (let k = col; k < stride; k++) {
+							M[iOff + k] -= fac * (M[pOff + k] as number);
 						}
 					}
 				}
 			}
 
 			pivotColOfRow[pivotRow] = col;
-			pivotCols.add(col);
+			isPivotCol[col] = 1;
 			pivotRow++;
 		}
 
-		// Check for inconsistency (0 = non-zero) in remaining rows
+		// Check inconsistency
 		let consistent = true;
 		for (let i = pivotRow; i < numRows; i++) {
-			if (Math.abs((M[i] as number[])[numCols] as number) > 1e-9) {
+			if (Math.abs(M[i * stride + numCols] as number) > 1e-9) {
 				consistent = false;
 				break;
 			}
 		}
-
-		if (!consistent) {
-			// No solution possible
-			continue;
-		}
+		if (!consistent) continue;
 
 		// Identify Free Variables
-		const freeCols: number[] = [];
+		// We can collect indices
+		const freeCols = new Int32Array(numCols);
+		let freeCount = 0;
 		for (let c = 0; c < numCols; c++) {
-			if (!pivotCols.has(c)) freeCols.push(c);
+			if (isPivotCol[c] === 0) {
+				freeCols[freeCount++] = c;
+			}
 		}
 
-		// Calculate conservative upper bounds for free variables
-		// A free variable can't be pressed more than min(Target[r]) for any r it affects,
-		// because all coeffs are non-negative in original problem.
-		const freeVarBounds = freeCols.map((col) => {
-			let limit = Infinity;
-			for (let r = 0; r < numRows; r++) {
-				if ((((A as number[][])[r] as number[])[col] as number) > 0) {
-					limit = Math.min(limit, targetJoltages[r] as number);
+		// Calculate bounds
+		const freeVarBounds = new Int32Array(freeCount);
+		for (let i = 0; i < freeCount; i++) {
+			const col = freeCols[i] as number;
+			let limit = 277; // Fallback
+			let minLim = Infinity;
+			// Check rows affected by this column in original A
+			// Re-scanning buttons input is easier than scanning M
+			const btnRows = buttons[col] as number[];
+			for (let k = 0; k < btnRows.length; k++) {
+				const r = btnRows[k] as number;
+				if (r < numRows) {
+					const t = targetJoltages[r] as number;
+					if (t < minLim) minLim = t;
 				}
 			}
-			return limit === Infinity ? 277 : limit; // Fallback to max seen joltage
-		});
+			if (minLim !== Infinity) limit = minLim;
+			freeVarBounds[i] = limit;
+		}
 
 		let minPressesForMachine = Infinity;
-		const assignment = Array(numCols).fill(0);
+		const assignment = new Int32Array(numCols);
 
-		const search = (freeIdx: number, currentFreeSum: number) => {
-			// Pruning
+		// Recursive search
+		const search = (idx: number, currentFreeSum: number) => {
 			if (currentFreeSum >= minPressesForMachine) return;
 
-			if (freeIdx === freeCols.length) {
-				// Calculate Dependent Variables (Pivots)
+			if (idx === freeCount) {
+				// Solve Dependent Variables
 				let currentTotal = currentFreeSum;
 				let valid = true;
 
-				// We need to check all pivot rows
 				for (let i = 0; i < pivotRow; i++) {
-					let val = (M[i] as number[])[numCols] as number; // RHS
-					for (let k = 0; k < freeCols.length; k++) {
+					const off = i * stride;
+					let val = M[off + numCols] as number; // RHS
+					// Subtract free variable contributions
+					// M[i][fc] is non-zero only if it wasn't eliminated...
+					// Wait, we eliminated ABOVE and BELOW the pivot.
+					// So M[i] only has the pivot column (value 1) and potentially free columns.
+					// Pivots are unit vectors.
+					// So x_pivot + sum(coeff * x_free) = RHS
+					// x_pivot = RHS - sum(coeff * x_free)
+
+					for (let k = 0; k < freeCount; k++) {
 						const fc = freeCols[k] as number;
-						val -= ((M[i] as number[])[fc] as number) * assignment[fc];
+						const coeff = M[off + fc] as number;
+						if (coeff > 1e-9 || coeff < -1e-9) {
+							val -= coeff * (assignment[fc] as number);
+						}
 					}
 
-					// Check integer and non-negative
 					if (val < -1e-4) {
 						valid = false;
 						break;
@@ -227,20 +288,17 @@ export const p2 = (input = _input) => {
 					currentTotal += roundVal;
 				}
 
-				if (valid) {
-					if (currentTotal < minPressesForMachine) {
-						minPressesForMachine = currentTotal;
-					}
+				if (valid && currentTotal < minPressesForMachine) {
+					minPressesForMachine = currentTotal;
 				}
 				return;
 			}
 
-			const col = freeCols[freeIdx] as number;
-			const limit = freeVarBounds[freeIdx] as number;
-
+			const col = freeCols[idx] as number;
+			const limit = freeVarBounds[idx] as number;
 			for (let val = 0; val <= limit; val++) {
 				assignment[col] = val;
-				search(freeIdx + 1, currentFreeSum + val);
+				search(idx + 1, currentFreeSum + val);
 			}
 		};
 
