@@ -47,38 +47,90 @@ export const p1 = (input = _input) => {
 };
 export const p2ex = () => p2(_example);
 export const p2 = (input = _input) => {
-	let result = 0;
-	const grid = input.map((r) => r.split(""));
-	const rows = grid.length;
-	const cols = grid[0]?.length ?? 0;
+	const rows = input.length;
+	const cols = input[0]?.length ?? 0;
+	if (rows === 0 || cols === 0) return 0;
 
-	while (true) {
-		const toRemove: [number, number][] = [];
-		for (let r = 0; r < rows; r++) {
-			for (let c = 0; c < cols; c++) {
-				if ((grid[r] as string[])[c] !== "@") continue;
-				let adjacent = 0;
-				for (let dr = -1; dr <= 1; dr++) {
-					for (let dc = -1; dc <= 1; dc++) {
-						if (dr === 0 && dc === 0) continue;
-						const rr = r + dr;
-						const cc = c + dc;
-						if (rr < 0 || rr >= rows || cc < 0 || cc >= cols) continue;
-						if ((grid[rr] as string[])[cc] === "@") {
-							adjacent++;
-							if (adjacent >= 4) break;
-						}
-					}
-					if (adjacent >= 4) break;
-				}
-				if (adjacent < 4) toRemove.push([r, c]);
+	// Padded grid dimensions
+	const stride = cols + 2;
+	const paddedSize = (rows + 2) * stride;
+
+	// 1 = '@', 0 = '.' or boundary
+	const grid = new Uint8Array(paddedSize);
+	const counts = new Int8Array(paddedSize);
+	const queued = new Uint8Array(paddedSize);
+	const q = new Int32Array(paddedSize);
+	let qHead = 0;
+	let qTail = 0;
+
+	// Offsets for 8 neighbors
+	const offsets = [
+		-stride - 1,
+		-stride,
+		-stride + 1,
+		-1,
+		1,
+		stride - 1,
+		stride,
+		stride + 1,
+	];
+
+	// Initialize grid
+	for (let r = 0; r < rows; r++) {
+		const line = input[r];
+		if (!line) continue;
+		const rowOffset = (r + 1) * stride;
+		for (let c = 0; c < cols; c++) {
+			if (line[c] === "@") {
+				grid[rowOffset + c + 1] = 1;
 			}
 		}
-		if (toRemove.length === 0) break;
-		for (const [r, c] of toRemove) {
-			(grid[r] as string[])[c] = ".";
-			result++;
+	}
+
+	// Calculate initial counts and populate queue
+	for (let r = 0; r < rows; r++) {
+		const rowOffset = (r + 1) * stride;
+		for (let c = 0; c < cols; c++) {
+			const idx = rowOffset + c + 1;
+			if (grid[idx] === 0) continue;
+
+			let count = 0;
+			// Manual unroll for performance? V8 handles loop well enough here.
+			for (let i = 0; i < 8; i++) {
+				if (grid[idx + (offsets[i] as number)] === 1) {
+					count++;
+				}
+			}
+			counts[idx] = count;
+
+			if (count < 4) {
+				queued[idx] = 1;
+				q[qTail++] = idx;
+			}
 		}
 	}
+
+	let result = 0;
+	while (qHead < qTail) {
+		const idx = q[qHead++] as number;
+		result++;
+
+		// "Remove" the cell
+		grid[idx] = 0;
+
+		// Update neighbors
+		for (let i = 0; i < 8; i++) {
+			const nIdx = idx + (offsets[i] as number);
+			if (grid[nIdx] === 1) {
+				const newCount = (counts[nIdx] as number) - 1;
+				counts[nIdx] = newCount;
+				if (newCount < 4 && queued[nIdx] === 0) {
+					queued[nIdx] = 1;
+					q[qTail++] = nIdx;
+				}
+			}
+		}
+	}
+
 	return result;
 };
