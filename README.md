@@ -121,7 +121,7 @@ Benchmarks are run on a AMD Ryzen 9 270 w/ Radeon 780M Graphics. Runtime: bun
 | :--- | :---------------------------------------------------------------- | ------: | ------: |
 | ⭐️⭐️ | [Day 1: Secret Entrance](https://adventofcode.com/2025/day/1)     | 0.025ms | 0.020ms |
 | ⭐️⭐️ | [Day 2: Gift Shop](https://adventofcode.com/2025/day/2)           | 0.002ms | 0.042ms |
-| ⭐️⭐️ | [Day 3: Lobby](https://adventofcode.com/2025/day/3)               |  1.29ms | 0.414ms |
+| ⭐️⭐️ | [Day 3: Lobby](https://adventofcode.com/2025/day/3)               | 0.039ms | 0.507ms |
 | ⭐️⭐️ | [Day 4: Printing Department](https://adventofcode.com/2025/day/4) |  0.53ms |  0.83ms |
 | ⭐️⭐️ | [Day 5: Cafeteria](https://adventofcode.com/2025/day/5)           | 0.566ms | 0.019ms |
 | ⭐️⭐️ | [Day 6: Trash Compactor](https://adventofcode.com/2025/day/6)     | 0.011ms | 0.010ms |
