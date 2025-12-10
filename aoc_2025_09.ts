@@ -81,9 +81,13 @@ export const p2 = (input = _input) => {
 	// Map is O(1) avg, Binary Search is O(log M). M is unique coords.
 	// Given M <= N, Map is fine.
 	const xMap = new Map<number, number>();
-	sortedX.forEach((x, i) => xMap.set(x, i));
+	for (const [i, x] of sortedX.entries()) {
+		xMap.set(x, i);
+	}
 	const yMap = new Map<number, number>();
-	sortedY.forEach((y, i) => yMap.set(y, i));
+	for (const [i, y] of sortedY.entries()) {
+		yMap.set(y, i);
+	}
 
 	for (let i = 0; i < n; i++) {
 		xRanks[i] = xMap.get(xs[i] as number) as number;
@@ -112,9 +116,7 @@ export const p2 = (input = _input) => {
 	for (let i = 0; i < n; i++) {
 		const next = (i + 1) % n;
 		const x1 = xs[i] as number;
-		const y1 = ys[i] as number;
 		const x2 = xs[next] as number;
-		const y2 = ys[next] as number;
 
 		const xr1 = xRanks[i] as number;
 		const yr1 = yRanks[i] as number;
@@ -180,7 +182,8 @@ export const p2 = (input = _input) => {
 			let val = grid[rowOffset + c] as number;
 			if (val === 0) {
 				if (r > 0 && (grid[prevRowOffset + c] as number) !== 0) val = 1;
-				else if (r < H - 1 && (grid[nextRowOffset + c] as number) !== 0) val = 1;
+				else if (r < H - 1 && (grid[nextRowOffset + c] as number) !== 0)
+					val = 1;
 				if (val !== 0) grid[rowOffset + c] = 1;
 			}
 		}
@@ -250,8 +253,7 @@ export const p2 = (input = _input) => {
 			const s2 =
 				rMin - 1 < 0 ? 0 : (prefixSum[(rMin - 1) * W + cMax] as number);
 			// getSum(rMax, cMin - 1)
-			const s3 =
-				cMin - 1 < 0 ? 0 : (prefixSum[rMax * W + cMin - 1] as number);
+			const s3 = cMin - 1 < 0 ? 0 : (prefixSum[rMax * W + cMin - 1] as number);
 			// getSum(rMin - 1, cMin - 1)
 			const s4 =
 				rMin - 1 < 0 || cMin - 1 < 0
@@ -261,8 +263,7 @@ export const p2 = (input = _input) => {
 			const actualCount = s1 - s2 - s3 + s4;
 
 			if (actualCount === expectedCount) {
-				const area =
-					(Math.abs(t1x - t2x) + 1) * (Math.abs(t1y - t2y) + 1);
+				const area = (Math.abs(t1x - t2x) + 1) * (Math.abs(t1y - t2y) + 1);
 				if (area > maxArea) maxArea = area;
 			}
 		}
