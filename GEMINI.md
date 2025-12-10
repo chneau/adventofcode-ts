@@ -22,13 +22,13 @@ your solution.
 ## To add a benchmark to the table:
 
 Get the problem description, benchmark it and then add it to the table in the
-@README.md file.
+@README.md file, and then run `bun run check` to format files.
 
 ## Code style
 
 Typescript is set to strict mode including `noUncheckedIndexedAccess`. Do not
-use "!" operator to assert undefined values, you can instead use a type
-assertion but zod is preferred to validate and parse data.
+use "!" (as null assertion) operator to assert undefined values, you can instead
+use a type assertion but zod is preferred to validate and parse data.
 
 ## Parsing input
 
