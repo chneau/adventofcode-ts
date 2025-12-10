@@ -37,22 +37,29 @@ const _rawExample = `162,817,812
 const _example = await parse(_rawExample);
 const _input = await parse(_rawInput);
 class DSU {
-	parent: number[];
-	size: number[];
+	parent: Int32Array;
+	size: Int32Array;
 	count: number;
 
 	constructor(n: number) {
-		this.parent = Array.from({ length: n }, (_, i) => i);
-		this.size = Array(n).fill(1);
+		this.parent = new Int32Array(n);
+		for (let i = 0; i < n; i++) this.parent[i] = i;
+		this.size = new Int32Array(n).fill(1);
 		this.count = n;
 	}
 
 	find(i: number): number {
-		if (this.parent[i] === i) {
-			return i;
+		let root = i;
+		while (root !== this.parent[root]) {
+			root = this.parent[root] as number;
 		}
-		this.parent[i] = this.find(this.parent[i] as number);
-		return this.parent[i];
+		let curr = i;
+		while (curr !== root) {
+			const next = this.parent[curr] as number;
+			this.parent[curr] = root;
+			curr = next;
+		}
+		return root;
 	}
 
 	union(i: number, j: number): boolean {
@@ -77,55 +84,123 @@ class DSU {
 export const p1ex = () => p1(_example, 10);
 export const p1 = (input = _input, numConnections: number = 1000) => {
 	const n = input.length;
+	const xs = new Int32Array(n);
+	const ys = new Int32Array(n);
+	const zs = new Int32Array(n);
+	for (let i = 0; i < n; i++) {
+		const p = input[i] as Point;
+		xs[i] = p.x;
+		ys[i] = p.y;
+		zs[i] = p.z;
+	}
+
 	const dsu = new DSU(n);
 
-	// Optimization: Only keep the smallest `numConnections` edges.
-	// We use a buffer and periodically sort/prune to keep memory low and avoid sorting N^2 items.
-	const edges: { u: number; v: number; distanceSq: number }[] = [];
 	const bufferSize = numConnections * 4;
-	let maxDistInSet = Infinity;
+	const edgeU = new Int32Array(bufferSize);
+	const edgeV = new Int32Array(bufferSize);
+	const edgeDist = new Int32Array(bufferSize);
+	let edgeCount = 0;
+	let maxDistInSet = 2147483647; // Max Int32
+
+	// Temporary array for sorting indices
+	const indices = new Int32Array(bufferSize);
 
 	for (let i = 0; i < n; i++) {
-		const p1 = input[i] as Point;
+		const xi = xs[i] as number;
+		const yi = ys[i] as number;
+		const zi = zs[i] as number;
 		for (let j = i + 1; j < n; j++) {
-			const p2 = input[j] as Point;
-			const dx = p1.x - p2.x;
-			const dy = p1.y - p2.y;
-			const dz = p1.z - p2.z;
+			const dx = xi - (xs[j] as number);
+			const dy = yi - (ys[j] as number);
+			const dz = zi - (zs[j] as number);
 			const distanceSq = dx * dx + dy * dy + dz * dz;
 
 			if (distanceSq < maxDistInSet) {
-				edges.push({ u: i, v: j, distanceSq });
-				if (edges.length >= bufferSize) {
-					edges.sort((a, b) => a.distanceSq - b.distanceSq);
-					edges.length = numConnections;
-					maxDistInSet = (edges[numConnections - 1] as { distanceSq: number })
-						.distanceSq;
+				edgeU[edgeCount] = i;
+				edgeV[edgeCount] = j;
+				edgeDist[edgeCount] = distanceSq;
+				edgeCount++;
+
+				if (edgeCount >= bufferSize) {
+					// Compact and sort
+					for (let k = 0; k < edgeCount; k++) indices[k] = k;
+					indices.subarray(0, edgeCount).sort((a, b) => {
+						return (edgeDist[a] as number) - (edgeDist[b] as number);
+					});
+
+					// Keep top numConnections
+					// We need to re-arrange arrays.
+					// Since buffer is small, we can create new temp arrays or swap.
+					// Easiest is to rewrite to start.
+					// But we can't overwrite in place trivially without extra memory or careful swapping.
+					// Given bufferSize is small (4000), copy is cheap.
+					// Actually, we can just "compact" by picking logic.
+
+					// To avoid allocation, we can do this:
+					// We only need to preserve the first `numConnections` elements *after sort*.
+					// But we have parallel arrays.
+					// Let's just create a small temp buffer for the "kept" part?
+					// No, let's just use the `indices` to permute.
+					// But we can't permute in-place easily.
+					// Let's use a secondary buffer?
+					// Or just simpler:
+					// We have `indices` sorted.
+					// We construct the new state in the first `numConnections` slots.
+					// But we might overwrite data we need.
+					// So we copy to a temp array then copy back? Or just specific items.
+
+					// OPTIMIZATION: Just use the `indices` to pull data.
+					// Since we are iterating strictly, we can move items.
+					// But `indices[0]` might be `0` (safe) or `edgeCount-1` (move from end to start).
+					// If we process `k` from 0 to `numConnections-1`:
+					// `edgeU[k] = edgeU[indices[k]]` -> If `indices[k] > k`, this is fine.
+					// If `indices[k] < k`, we might have already overwritten `edgeU[indices[k]]`.
+					// So we need to copy out.
+					// Given bufferSize=4000, let's just allocate temp arrays for the swap. It's tiny.
+					const kept = numConnections;
+					const tempU = new Int32Array(kept);
+					const tempV = new Int32Array(kept);
+					const tempDist = new Int32Array(kept);
+					for (let k = 0; k < kept; k++) {
+						const idx = indices[k] as number;
+						tempU[k] = edgeU[idx] as number;
+						tempV[k] = edgeV[idx] as number;
+						tempDist[k] = edgeDist[idx] as number;
+					}
+					edgeU.set(tempU);
+					edgeV.set(tempV);
+					edgeDist.set(tempDist);
+					edgeCount = kept;
+					maxDistInSet = edgeDist[kept - 1] as number;
 				}
 			}
 		}
 	}
 
-	edges.sort((a, b) => a.distanceSq - b.distanceSq);
-	if (edges.length > numConnections) {
-		edges.length = numConnections;
+	// Final sort of what remains
+	for (let k = 0; k < edgeCount; k++) indices[k] = k;
+	indices.subarray(0, edgeCount).sort((a, b) => (edgeDist[a] as number) - (edgeDist[b] as number));
+
+	const limit = Math.min(edgeCount, numConnections);
+	for (let k = 0; k < limit; k++) {
+		const idx = indices[k] as number;
+		dsu.union(edgeU[idx] as number, edgeV[idx] as number);
 	}
 
-	for (const edge of edges) {
-		dsu.union(edge.u, edge.v);
-	}
-
-	const componentSizes: number[] = [];
+	const componentSizes = new Int32Array(n);
+	let cCount = 0;
 	for (let i = 0; i < n; i++) {
 		if (dsu.parent[i] === i) {
-			componentSizes.push(dsu.size[i] as number);
+			componentSizes[cCount++] = dsu.size[i] as number;
 		}
 	}
-
-	componentSizes.sort((a, b) => b - a);
+	// Sort component sizes descending
+	componentSizes.subarray(0, cCount).sort((a, b) => b - a);
 
 	let result = 1;
-	for (let i = 0; i < Math.min(3, componentSizes.length); i++) {
+	const top = Math.min(3, cCount);
+	for (let i = 0; i < top; i++) {
 		result *= componentSizes[i] as number;
 	}
 
@@ -135,47 +210,66 @@ export const p1 = (input = _input, numConnections: number = 1000) => {
 export const p2ex = () => p2(_example);
 export const p2 = (input = _input) => {
 	const n = input.length;
-	// Prim's Algorithm to build MST O(N^2)
+	const xs = new Int32Array(n);
+	const ys = new Int32Array(n);
+	const zs = new Int32Array(n);
+	for (let i = 0; i < n; i++) {
+		const p = input[i] as Point;
+		xs[i] = p.x;
+		ys[i] = p.y;
+		zs[i] = p.z;
+	}
+
 	const minDist = new Float64Array(n).fill(Infinity);
 	const parent = new Int32Array(n).fill(-1);
-	const visited = new Uint8Array(n); // 0 or 1
+	const visited = new Uint8Array(n);
 	minDist[0] = 0;
 
 	let maxEdgeWeight = -1;
 	let uMax = -1;
 	let vMax = -1;
 
+	// Optimization: Track min value in a loop?
+	// With N ~ 1000-5000, plain search is ok.
+	// But `xs` access is faster.
+
 	for (let i = 0; i < n; i++) {
 		let u = -1;
 		let minVal = Infinity;
-		// Find min unvisited node
+
+		// Finding min unvisited
+		// This loop is O(N)
 		for (let j = 0; j < n; j++) {
-			if (visited[j] === 0 && (minDist[j] as number) < minVal) {
-				minVal = minDist[j] as number;
-				u = j;
+			if (visited[j] === 0) {
+				const d = minDist[j] as number;
+				if (d < minVal) {
+					minVal = d;
+					u = j;
+				}
 			}
 		}
 
-		if (u === -1) break; // Should not happen for connected graph
+		if (u === -1) break;
 		visited[u] = 1;
 
-		// If not root, consider the edge used to reach u
 		if (parent[u] !== -1) {
-			const dist = minDist[u] as number;
-			if (dist > maxEdgeWeight) {
-				maxEdgeWeight = dist;
+			if (minVal > maxEdgeWeight) {
+				maxEdgeWeight = minVal;
 				uMax = u;
 				vMax = parent[u] as number;
 			}
 		}
 
-		const p1 = input[u] as Point;
+		const xu = xs[u] as number;
+		const yu = ys[u] as number;
+		const zu = zs[u] as number;
+
+		// Update neighbors
 		for (let v = 0; v < n; v++) {
 			if (visited[v] === 0) {
-				const p2 = input[v] as Point;
-				const dx = p1.x - p2.x;
-				const dy = p1.y - p2.y;
-				const dz = p1.z - p2.z;
+				const dx = xu - (xs[v] as number);
+				const dy = yu - (ys[v] as number);
+				const dz = zu - (zs[v] as number);
 				const distSq = dx * dx + dy * dy + dz * dz;
 				if (distSq < (minDist[v] as number)) {
 					minDist[v] = distSq;
@@ -185,7 +279,7 @@ export const p2 = (input = _input) => {
 		}
 	}
 
-	const pA = input[uMax] as Point;
-	const pB = input[vMax] as Point;
-	return pA.x * pB.x;
+	// uMax and vMax are indices.
+	// Return pA.x * pB.x
+	return (xs[uMax] as number) * (xs[vMax] as number);
 };
