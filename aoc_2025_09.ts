@@ -182,8 +182,9 @@ export const p2 = (input = _input) => {
 			let val = grid[rowOffset + c] as number;
 			if (val === 0) {
 				if (r > 0 && (grid[prevRowOffset + c] as number) !== 0) val = 1;
-				else if (r < H - 1 && (grid[nextRowOffset + c] as number) !== 0)
+				else if (r < H - 1 && (grid[nextRowOffset + c] as number) !== 0) {
 					val = 1;
+				}
 				if (val !== 0) grid[rowOffset + c] = 1;
 			}
 		}

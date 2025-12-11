@@ -180,7 +180,9 @@ export const p1 = (input = _input, numConnections: number = 1000) => {
 
 	// Final sort of what remains
 	for (let k = 0; k < edgeCount; k++) indices[k] = k;
-	indices.subarray(0, edgeCount).sort((a, b) => (edgeDist[a] as number) - (edgeDist[b] as number));
+	indices
+		.subarray(0, edgeCount)
+		.sort((a, b) => (edgeDist[a] as number) - (edgeDist[b] as number));
 
 	const limit = Math.min(edgeCount, numConnections);
 	for (let k = 0; k < limit; k++) {
