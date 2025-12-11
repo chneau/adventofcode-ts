@@ -1,11 +1,41 @@
 import { fetchInput } from "./session";
 
 const parse = async (input: string) => {
-	return input
-		.trim()
-		.split("\n")
-		.map((line) => line.split(""));
+	const lines = input.trim().split("\n");
+	if (lines.length === 0) {
+		return {
+			grid: new Uint8Array(0),
+			width: 0,
+			height: 0,
+			startR: -1,
+			startC: -1,
+		};
+	}
+	const width = lines[0]?.length ?? 0;
+	const height = lines.length;
+	const grid = new Uint8Array(width * height);
+	let startR = -1;
+	let startC = -1;
+
+	for (let r = 0; r < height; r++) {
+		const line = lines[r];
+		if (!line) continue;
+		const offset = r * width;
+		for (let c = 0; c < width; c++) {
+			const char = line.charCodeAt(c);
+			// ^ is 94
+			if (char === 94) {
+				grid[offset + c] = 1;
+			} else if (char === 83) {
+				// S is 83
+				startR = r;
+				startC = c;
+			}
+		}
+	}
+	return { grid, width, height, startR, startC };
 };
+
 const _rawInput = await fetchInput();
 const _rawExample = `.......S.......
 ...............
@@ -27,76 +57,70 @@ const _example = await parse(_rawExample);
 const _input = await parse(_rawInput);
 export const p1ex = () => p1(_example);
 export const p1 = (input = _input) => {
+	const { grid, width, height, startR, startC } = input;
+	let active = new Uint8Array(width);
+	let nextActive = new Uint8Array(width);
+	if (startC !== -1) active[startC] = 1;
 	let splits = 0;
-	let active = new Set<number>();
-	let startR = -1;
 
-	// Find S
-	for (let r = 0; r < input.length; r++) {
-		for (let c = 0; c < (input[r]?.length ?? 0); c++) {
-			if (input[r]?.[c] === "S") {
-				active.add(c);
-				startR = r;
-				break;
-			}
-		}
-		if (startR !== -1) break;
-	}
+	for (let r = startR + 1; r < height; r++) {
+		const offset = r * width;
+		nextActive.fill(0);
+		for (let c = 0; c < width; c++) {
+			if (active[c] === 0) continue;
 
-	for (let r = startR + 1; r < input.length; r++) {
-		const nextActive = new Set<number>();
-		for (const c of active) {
-			if (c < 0 || c >= (input[r]?.length ?? 0)) continue;
-			const cell = input[r]?.[c];
-			if (cell === "^") {
+			// Check grid cell
+			if (grid[offset + c] === 1) {
+				// ^
 				splits++;
-				nextActive.add(c - 1);
-				nextActive.add(c + 1);
+				// TypedArray ignores out-of-bounds writes
+				nextActive[c - 1] = 1;
+				nextActive[c + 1] = 1;
 			} else {
-				nextActive.add(c);
+				nextActive[c] = 1;
 			}
 		}
+		const temp = active;
 		active = nextActive;
+		nextActive = temp;
 	}
 
 	return splits;
 };
 export const p2ex = () => p2(_example);
 export const p2 = (input = _input) => {
-	let active = new Map<number, number>();
-	let startR = -1;
-	let startC = -1;
+	const { grid, width, height, startR, startC } = input;
+	let active = new Float64Array(width);
+	let nextActive = new Float64Array(width);
+	if (startC !== -1) active[startC] = 1;
 
-	// Find S
-	for (let r = 0; r < input.length; r++) {
-		for (let c = 0; c < (input[r]?.length ?? 0); c++) {
-			if (input[r]?.[c] === "S") {
-				startR = r;
-				startC = c;
-				break;
-			}
-		}
-		if (startR !== -1) break;
-	}
-	active.set(startC, 1);
+	for (let r = startR + 1; r < height; r++) {
+		const offset = r * width;
+		nextActive.fill(0);
+		for (let c = 0; c < width; c++) {
+			const count = active[c] ?? 0;
+			if (count === 0) continue;
 
-	for (let r = startR + 1; r < input.length; r++) {
-		const nextActive = new Map<number, number>();
-		for (const [c, count] of active.entries()) {
-			let cell = "."; // Assume empty space if outside the current row's explicit boundaries.
-			if (c >= 0 && c < (input[r]?.length ?? 0)) {
-				cell = input[r]?.[c] ?? ".";
-			}
-
-			if (cell === "^") {
-				nextActive.set(c - 1, (nextActive.get(c - 1) || 0) + count);
-				nextActive.set(c + 1, (nextActive.get(c + 1) || 0) + count);
+			if (grid[offset + c] === 1) {
+				// ^
+				if (c > 0) {
+					nextActive[c - 1] = (nextActive[c - 1] ?? 0) + count;
+				}
+				if (c < width - 1) {
+					nextActive[c + 1] = (nextActive[c + 1] ?? 0) + count;
+				}
 			} else {
-				nextActive.set(c, (nextActive.get(c) || 0) + count);
+				nextActive[c] = (nextActive[c] ?? 0) + count;
 			}
 		}
+		const temp = active;
 		active = nextActive;
+		nextActive = temp;
 	}
 
-	return Array.from(active.values()).reduce((sum, count) => sum + count, 0);
+	let sum = 0;
+	for (let c = 0; c < width; c++) {
+		sum += active[c] ?? 0;
+	}
+	return sum;
 };
