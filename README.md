@@ -129,5 +129,5 @@ Benchmarks are run on a AMD Ryzen 9 270 w/ Radeon 780M Graphics. Runtime: bun
 | ⭐️⭐️ | [Day 8: Playground](https://adventofcode.com/2025/day/8)          |  4.56ms |  3.05ms |
 | ⭐️⭐️ | [Day 9: Movie Theater](https://adventofcode.com/2025/day/9)       | 0.385ms |  2.11ms |
 | ⭐️⭐️ | [Day 10: Factory](https://adventofcode.com/2025/day/10)           |  6.66ms | 28.15ms |
-|      | Day 11                                                            |         |         |
+| ⭐️⭐️ | [Day 11: Reactor](https://adventofcode.com/2025/day/11)           | 0.009ms | 0.428ms |
 |      | Day 12                                                            |         |         |

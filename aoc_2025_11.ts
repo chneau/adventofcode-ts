@@ -36,30 +36,87 @@ hhh: ccc fff iii
 iii: out`;
 const _example = await parse(_exampleRaw);
 
+const _example2Raw = `svr: aaa bbb
+aaa: fft
+fft: ccc
+bbb: tty
+tty: ccc
+ccc: ddd eee
+ddd: hub
+hub: fff
+eee: dac
+dac: fff
+fff: ggg hhh
+ggg: out
+hhh: out`;
+const _example2 = await parse(_example2Raw);
+
 export const p1ex = () => p1(_example);
 export const p1 = (graph = _input) => {
-	let pathCount = 0;
+	const memo = new Map<string, number>();
 
-	function dfs(currentDevice: string) {
+	function countPaths(currentDevice: string): number {
 		if (currentDevice === "out") {
-			pathCount++;
-			return;
+			return 1;
+		}
+		const cached = memo.get(currentDevice);
+		if (cached !== undefined) {
+			return cached;
 		}
 
+		let totalPaths = 0;
 		const outputs = graph[currentDevice];
 		if (outputs) {
 			for (const nextDevice of outputs) {
-				dfs(nextDevice);
+				totalPaths += countPaths(nextDevice);
 			}
 		}
+
+		memo.set(currentDevice, totalPaths);
+		return totalPaths;
 	}
 
-	dfs("you");
-	return pathCount;
+	return countPaths("you");
 };
 
-export const p2ex = () => p2(_example);
-export const p2 = (_graph = _input) => {
-	// Part 2 implementation will go here
-	return 0;
+export const p2ex = () => p2(_example2);
+export const p2 = (graph = _input) => {
+	const memo = new Map<string, number>();
+
+	function countPaths(
+		currentDevice: string,
+		hasVisitedDac: boolean,
+		hasVisitedFft: boolean,
+	): number {
+		const mask = (hasVisitedDac ? 1 : 0) | (hasVisitedFft ? 2 : 0);
+		const key = `${currentDevice}:${mask}`;
+
+		const cached = memo.get(key);
+		if (cached !== undefined) {
+			return cached;
+		}
+
+		if (currentDevice === "out") {
+			return hasVisitedDac && hasVisitedFft ? 1 : 0;
+		}
+
+		let totalPaths = 0;
+		const outputs = graph[currentDevice];
+		if (outputs) {
+			for (const nextDevice of outputs) {
+				const nextHasVisitedDac = hasVisitedDac || nextDevice === "dac";
+				const nextHasVisitedFft = hasVisitedFft || nextDevice === "fft";
+				totalPaths += countPaths(
+					nextDevice,
+					nextHasVisitedDac,
+					nextHasVisitedFft,
+				);
+			}
+		}
+
+		memo.set(key, totalPaths);
+		return totalPaths;
+	}
+
+	return countPaths("svr", false, false);
 };
