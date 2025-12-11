@@ -1,6 +1,6 @@
 {
 	"scripts": {
-		"start": "bun run --watch index.ts",
+		"start": "bun index.ts",
 		"upgrade": "bun update --latest",
 		"check": "deno fmt --use-tabs --quiet; oxlint --fix-dangerously --quiet; timeout 3s biome check --write --unsafe .",
 		"lint": "tsc --noEmit",
