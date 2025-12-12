@@ -98,13 +98,15 @@ type Shape = boolean[][];
 
 const rotate = (shape: Shape): Shape => {
 	const rows = shape.length;
-	const cols = shape[0].length;
+	const cols = (shape[0] as boolean[]).length;
 	const newShape: Shape = Array.from({ length: cols }, () =>
 		Array(rows).fill(false),
 	);
 	for (let r = 0; r < rows; r++) {
 		for (let c = 0; c < cols; c++) {
-			newShape[c][rows - 1 - r] = shape[r][c];
+			(newShape[c] as boolean[])[rows - 1 - r] = (shape[r] as boolean[])[
+				c
+			] as boolean;
 		}
 	}
 	return newShape;
@@ -117,12 +119,12 @@ const flip = (shape: Shape): Shape => {
 const normalizeShape = (shape: Shape): Shape => {
 	let minR = shape.length,
 		maxR = -1;
-	let minC = shape[0].length,
+	let minC = (shape[0] as boolean[]).length,
 		maxC = -1;
 
 	for (let r = 0; r < shape.length; r++) {
-		for (let c = 0; c < shape[0].length; c++) {
-			if (shape[r][c]) {
+		for (let c = 0; c < (shape[0] as boolean[]).length; c++) {
+			if ((shape[r] as boolean[])[c]) {
 				minR = Math.min(minR, r);
 				maxR = Math.max(maxR, r);
 				minC = Math.min(minC, c);
@@ -137,7 +139,7 @@ const normalizeShape = (shape: Shape): Shape => {
 	for (let r = minR; r <= maxR; r++) {
 		const newRow: boolean[] = [];
 		for (let c = minC; c <= maxC; c++) {
-			newRow.push(shape[r][c]);
+			newRow.push((shape[r] as boolean[])[c] as boolean);
 		}
 		normalized.push(newRow);
 	}
@@ -234,7 +236,8 @@ export const p1 = (input = _input) => {
 		// Pre-check: Total area
 		let totalPresentArea = 0;
 		for (let id = 0; id < presentCounts.length; id++) {
-			totalPresentArea += presentCounts[id] * (areaCache.get(id) ?? 0);
+			totalPresentArea +=
+				(presentCounts[id] as number) * (areaCache.get(id) ?? 0);
 		}
 		if (totalPresentArea > width * height) {
 			continue;
@@ -262,18 +265,18 @@ export const p1 = (input = _input) => {
 			const moves: BigUint64Array[] = [];
 			for (const shape of orientations) {
 				const shapeH = shape.length;
-				const shapeW = shape[0].length;
+				const shapeW = (shape[0] as boolean[]).length;
 
 				for (let r = 0; r <= height - shapeH; r++) {
 					for (let c = 0; c <= width - shapeW; c++) {
 						const mask = new BigUint64Array(words);
 						for (let sr = 0; sr < shapeH; sr++) {
 							for (let sc = 0; sc < shapeW; sc++) {
-								if (shape[sr][sc]) {
+								if ((shape[sr] as boolean[])[sc]) {
 									const bitIndex = (r + sr) * width + (c + sc);
 									const wordIdx = Math.floor(bitIndex / 64);
 									const bitIdx = bitIndex % 64;
-									mask[wordIdx] |= 1n << BigInt(bitIdx);
+									(mask[wordIdx] as bigint) |= 1n << BigInt(bitIdx);
 								}
 							}
 						}
@@ -286,7 +289,12 @@ export const p1 = (input = _input) => {
 				possible = false;
 				break;
 			}
-			tasks.push({ id, count, moves, area: areaCache.get(id) ?? 0 });
+			tasks.push({
+				id,
+				count: count as number,
+				moves,
+				area: areaCache.get(id) ?? 0,
+			});
 		}
 
 		if (!possible) continue;
@@ -311,7 +319,7 @@ export const p1 = (input = _input) => {
 			metadata.push(allMoves.length); // Offset
 			for (const m of task.moves) {
 				for (let w = 0; w < words; w++) {
-					allMoves.push(m[w]);
+					allMoves.push(m[w] as bigint);
 				}
 			}
 		}
