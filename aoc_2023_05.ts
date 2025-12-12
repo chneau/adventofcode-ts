@@ -26,15 +26,22 @@ type ParsedInput = z.infer<typeof ParsedInput>;
 const parse = async (input: string) => {
 	const sections = input.split("\n\n");
 
-	const seeds = ((sections[0] as string).split(":")[1] as string).trim().split(" ").map(Number);
+	const seeds = ((sections[0] as string).split(":")[1] as string)
+		.trim()
+		.split(" ")
+		.map(Number);
 
 	const maps: MapEntry[] = [];
 	for (let i = 1; i < sections.length; i++) {
-		const lines = (sections[i] as string).split("\n").filter((line) => line.trim() !== "");
+		const lines = (sections[i] as string)
+			.split("\n")
+			.filter((line) => line.trim() !== "");
 		const name = (lines[0] as string).trim();
 		const ranges: Range[] = [];
 		for (let j = 1; j < lines.length; j++) {
-			const [destinationRangeStart, sourceRangeStart, rangeLength] = (lines[j] as string)
+			const [destinationRangeStart, sourceRangeStart, rangeLength] = (
+				lines[j] as string
+			)
 				.split(" ")
 				.map(Number) as [number, number, number];
 			ranges.push({ destinationRangeStart, sourceRangeStart, rangeLength });
