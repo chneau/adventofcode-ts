@@ -117,17 +117,17 @@ This project is open source.
 Benchmarks are run on a AMD Ryzen 9 270 w/ Radeon 780M Graphics. Runtime: bun
 1.3.3 (x64-linux)
 
-|      | Day                                                               |  Part 1 |  Part 2 |
-| :--- | :---------------------------------------------------------------- | ------: | ------: |
-| ⭐️⭐️ | [Day 1: Secret Entrance](https://adventofcode.com/2025/day/1)     | 0.025ms | 0.020ms |
-| ⭐️⭐️ | [Day 2: Gift Shop](https://adventofcode.com/2025/day/2)           | 0.002ms | 0.042ms |
-| ⭐️⭐️ | [Day 3: Lobby](https://adventofcode.com/2025/day/3)               | 0.039ms | 0.507ms |
-| ⭐️⭐️ | [Day 4: Printing Department](https://adventofcode.com/2025/day/4) |  0.53ms |  0.83ms |
-| ⭐️⭐️ | [Day 5: Cafeteria](https://adventofcode.com/2025/day/5)           | 0.566ms | 0.019ms |
-| ⭐️⭐️ | [Day 6: Trash Compactor](https://adventofcode.com/2025/day/6)     | 0.011ms | 0.010ms |
-| ⭐️⭐️ | [Day 7: Laboratories](https://adventofcode.com/2025/day/7)        | 0.016ms | 0.038ms |
-| ⭐️⭐️ | [Day 8: Playground](https://adventofcode.com/2025/day/8)          |  4.56ms |  3.05ms |
-| ⭐️⭐️ | [Day 9: Movie Theater](https://adventofcode.com/2025/day/9)       | 0.385ms |  2.11ms |
-| ⭐️⭐️ | [Day 10: Factory](https://adventofcode.com/2025/day/10)           |  6.66ms | 28.15ms |
-| ⭐️⭐️ | [Day 11: Reactor](https://adventofcode.com/2025/day/11)           | 0.009ms | 0.428ms |
-|      | Day 12                                                            |         |         |
+|      | Day                                                                 |   Part 1 |  Part 2 |
+| :--- | :------------------------------------------------------------------ | -------: | ------: |
+| ⭐️⭐️ | [Day 1: Secret Entrance](https://adventofcode.com/2025/day/1)       |  0.025ms | 0.020ms |
+| ⭐️⭐️ | [Day 2: Gift Shop](https://adventofcode.com/2025/day/2)             |  0.002ms | 0.042ms |
+| ⭐️⭐️ | [Day 3: Lobby](https://adventofcode.com/2025/day/3)                 |  0.039ms | 0.507ms |
+| ⭐️⭐️ | [Day 4: Printing Department](https://adventofcode.com/2025/day/4)   |   0.53ms |  0.83ms |
+| ⭐️⭐️ | [Day 5: Cafeteria](https://adventofcode.com/2025/day/5)             |  0.566ms | 0.019ms |
+| ⭐️⭐️ | [Day 6: Trash Compactor](https://adventofcode.com/2025/day/6)       |  0.011ms | 0.010ms |
+| ⭐️⭐️ | [Day 7: Laboratories](https://adventofcode.com/2025/day/7)          |  0.016ms | 0.038ms |
+| ⭐️⭐️ | [Day 8: Playground](https://adventofcode.com/2025/day/8)            |   4.56ms |  3.05ms |
+| ⭐️⭐️ | [Day 9: Movie Theater](https://adventofcode.com/2025/day/9)         |  0.385ms |  2.11ms |
+| ⭐️⭐️ | [Day 10: Factory](https://adventofcode.com/2025/day/10)             |   6.66ms | 28.15ms |
+| ⭐️⭐️ | [Day 11: Reactor](https://adventofcode.com/2025/day/11)             |  0.009ms | 0.428ms |
+| ⭐️⭐️ | [Day 12: Christmas Tree Farm](https://adventofcode.com/2025/day/12) | 162390ms | 24stars |
